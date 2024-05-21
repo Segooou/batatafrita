@@ -6,7 +6,7 @@ import { http } from './main/config/app';
 DataSource.$connect()
   .then(() => {
     http.listen(env.API_PORT, () => {
-      console.info(`Server started at http://localhost:${env.API_PORT}`);
+      console.info(`Server started at http://localhost:${env.API_PORT}/api-docs`);
     });
   })
   .catch((error: unknown) => {

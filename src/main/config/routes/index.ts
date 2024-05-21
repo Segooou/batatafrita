@@ -1,6 +1,13 @@
+import {
+  ActionRoutes,
+  FavoriteUserFunctionalityRoutes,
+  FunctionalityRoutes,
+  NewFunctionalityRoutes,
+  PlatformRoutes,
+  UserRoutes
+} from '../../routes/private';
 import { AuthRoutes, EmailRoutes, TestRoutes, UserPublicRoutes } from '../../routes/public';
 import { Router } from 'express';
-import { UserRoutes } from '../../routes/private';
 import { validateTokenMiddleware } from '../../middleware/validation';
 import type { Express } from 'express';
 
@@ -16,6 +23,11 @@ export const setupRoutes = (app: Express): void => {
 
   // privateRouter
   UserRoutes(privateRouter);
+  ActionRoutes(privateRouter);
+  PlatformRoutes(privateRouter);
+  NewFunctionalityRoutes(privateRouter);
+  FavoriteUserFunctionalityRoutes(privateRouter);
+  FunctionalityRoutes(privateRouter);
 
   app.use(publicRouter);
 

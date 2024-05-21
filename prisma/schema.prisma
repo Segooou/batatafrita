@@ -8,13 +8,143 @@ datasource db {
 }
 
 model User {
-  id       Int    @id @default(autoincrement())
-  email    String
+  id       Int     @id @default(autoincrement())
+  username String
   password String
+  avatar   String?
+  role     Role    @default(common)
+
+  actions                   Action[]
+  favoriteUserFunctionality FavoriteUserFunctionality[]
+  newFunctionality          NewFunctionality[]
 
   finishedAt DateTime? @db.Timestamptz()
   createdAt  DateTime  @default(now()) @db.Timestamptz()
   updatedAt  DateTime  @updatedAt @db.Timestamptz()
 
   @@map("user")
+}
+
+enum Role {
+  common
+  admin
+}
+
+model Platform {
+  id          Int     @id @default(autoincrement())
+  name        String
+  keyword     String
+  image       String
+  description String?
+
+  NewFunctionality NewFunctionality[]
+  functionalities  Functionality[]
+
+  finishedAt DateTime? @db.Timestamptz()
+  createdAt  DateTime  @default(now()) @db.Timestamptz()
+  updatedAt  DateTime  @updatedAt @db.Timestamptz()
+
+  @@map("platform")
+}
+
+model Functionality {
+  id          Int     @id @default(autoincrement())
+  name        String
+  keyword     String
+  description String?
+  apiRoute    String
+
+  platform                  Platform                    @relation(fields: [platformId], references: [id])
+  inputProps                InputProps[]
+  actions                   Action[]
+  favoriteUserFunctionality FavoriteUserFunctionality[]
+
+  platformId Int
+
+  finishedAt DateTime? @db.Timestamptz()
+  createdAt  DateTime  @default(now()) @db.Timestamptz()
+  updatedAt  DateTime  @updatedAt @db.Timestamptz()
+
+  @@map("functionality")
+}
+
+model InputProps {
+  id          Int       @id @default(autoincrement())
+  label       String
+  placeholder String
+  isRequired  Boolean
+  error       Boolean   @default(false)
+  type        InputType
+  mask        String?
+  maskLength  Int?
+
+  functionality   Functionality @relation(fields: [functionalityId], references: [id])
+  functionalityId Int
+
+  finishedAt DateTime? @db.Timestamptz()
+  createdAt  DateTime  @default(now()) @db.Timestamptz()
+  updatedAt  DateTime  @updatedAt @db.Timestamptz()
+
+  @@map("input_props")
+}
+
+enum InputType {
+  text
+  email
+  tel
+  url
+}
+
+model FavoriteUserFunctionality {
+  id Int @id @default(autoincrement())
+
+  user            User          @relation(fields: [userId], references: [id])
+  userId          Int
+  functionality   Functionality @relation(fields: [functionalityId], references: [id])
+  functionalityId Int
+
+  @@map("favorite_user_functionality")
+}
+
+model Action {
+  id       Int        @id @default(autoincrement())
+  result   String
+  hasError Boolean    @default(false)
+  action   ActionEnum @default(none)
+
+  user          User          @relation(fields: [userId], references: [id])
+  functionality Functionality @relation(fields: [functionalityId], references: [id])
+
+  functionalityId Int
+  userId          Int
+
+  finishedAt DateTime? @db.Timestamptz()
+  createdAt  DateTime  @default(now()) @db.Timestamptz()
+  updatedAt  DateTime  @updatedAt @db.Timestamptz()
+
+  @@map("action")
+}
+
+enum ActionEnum {
+  copy
+  none
+}
+
+model NewFunctionality {
+  id          Int     @id @default(autoincrement())
+  name        String
+  description String
+  wasRaised   Boolean @default(false)
+
+  platform Platform @relation(fields: [platformId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
+
+  userId     Int
+  platformId Int
+
+  finishedAt DateTime? @db.Timestamptz()
+  createdAt  DateTime  @default(now()) @db.Timestamptz()
+  updatedAt  DateTime  @updatedAt @db.Timestamptz()
+
+  @@map("newFunctionality")
 }

@@ -1,3 +1,3 @@
-export type userQueryFields = 'email';
+export type userQueryFields = 'roleEnum' | 'username';
 
-export const userListQueryFields: userQueryFields[] = ['email'];
+export const userListQueryFields: userQueryFields[] = ['username', 'roleEnum'];

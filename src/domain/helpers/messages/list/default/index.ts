@@ -5,10 +5,6 @@ export const defaultMessages = {
     english: `${field.english} already registered`,
     portuguese: `${field.portuguese} já está cadastrada`
   }),
-  badFile: {
-    english: 'Unsupported file',
-    portuguese: 'Arquivo não suportado'
-  },
   badOrder: {
     english: 'Sorting failure',
     portuguese: 'Falha na ordenação'
@@ -42,6 +38,11 @@ export const defaultMessages = {
       return {
         english: 'File too large',
         portuguese: 'Arquivo muito pesado'
+      };
+    if (message === 'Unexpected field')
+      return {
+        english: 'Unsupported file',
+        portuguese: 'Arquivo não suportado'
       };
     return {
       english: 'Error during file upload',

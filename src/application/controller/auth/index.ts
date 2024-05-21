@@ -16,13 +16,13 @@ import type { Controller } from '../../../domain/protocols';
 import type { Request, Response } from 'express';
 
 interface Body {
-  email: string;
+  username: string;
   password: string;
 }
 
 /**
  * @typedef {object} LoginBody
- * @property {string} email.required
+ * @property {string} username.required
  * @property {string} password.required
  */
 
@@ -45,8 +45,8 @@ interface Body {
  * @tags A Auth
  * @example request - payload example
  * {
- *   "email": "support@sp.senai.br",
- *   "password": "Senai@127"
+ *   "username": "segou",
+ *   "password": "123456"
  * }
  * @param {LoginBody} request.body.required - application/json
  * @return {LoginResponse} 200 - Successful response - application/json
@@ -57,11 +57,11 @@ export const authenticateUserController: Controller =
     try {
       await authenticateSchema.validate(request, { abortEarly: false });
 
-      const { email, password } = request.body as Body;
+      const { username, password } = request.body as Body;
 
       const user = await DataSource.user.findFirst({
         select: { ...userFindParams, password: true },
-        where: { AND: { email, finishedAt: null } }
+        where: { AND: { finishedAt: null, username } }
       });
 
       if (user === null) return badRequest({ message: messages.auth.notFound, response });
@@ -71,18 +71,20 @@ export const authenticateUserController: Controller =
       if (!passwordIsCorrect) return badRequest({ message: messages.auth.notFound, response });
 
       const { accessToken } = generateToken({
-        email: user.email,
-        id: user.id
+        id: user.id,
+        role: user.role,
+        username: user.username
       });
 
       return ok({
         payload: {
           accessToken,
           user: {
+            avatar: user.avatar,
             createdAt: user.createdAt,
-            email: user.email,
             id: user.id,
-            updatedAt: user.updatedAt
+            updatedAt: user.updatedAt,
+            username: user.username
           }
         },
         response

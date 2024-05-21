@@ -11,3 +11,4 @@ export * from './text-to-pdf';
 export * from './pdf-to-text';
 export * from './text-to-txt';
 export * from './where-by-id';
+export * from './normalize-text';
