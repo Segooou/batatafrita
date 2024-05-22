@@ -64,6 +64,8 @@ export const stakeLoginCodeController: Controller =
 
       const imap = new Imap(imapConfig);
 
+      let lastMatch;
+
       const searchEmail = (): void => {
         imap.search(
           [
@@ -73,7 +75,9 @@ export const stakeLoginCodeController: Controller =
           (err2, results) => {
             if (err2) throw new Error('');
             if (results.length > 0) {
-              const fetch = imap.fetch(results, { bodies: '' });
+              lastMatch = results[results.length - 1];
+
+              const fetch = imap.fetch([lastMatch], { bodies: '' });
 
               fetch.on('message', (msg) => {
                 msg.on('body', (stream) => {
