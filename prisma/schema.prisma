@@ -108,9 +108,9 @@ model FavoriteUserFunctionality {
 }
 
 model Action {
-  id       Int     @id @default(autoincrement())
-  result   String
-  hasError Boolean @default(false)
+  id       Int      @id @default(autoincrement())
+  result   String[]
+  hasError Boolean  @default(false)
   data     Json?
 
   user          User          @relation(fields: [userId], references: [id])

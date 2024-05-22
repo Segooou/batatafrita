@@ -1,5 +1,6 @@
 import {
   ActionRoutes,
+  BetanoRoutes,
   FavoriteUserFunctionalityRoutes,
   FunctionalityRoutes,
   NewFunctionalityRoutes,
@@ -29,6 +30,7 @@ export const setupRoutes = (app: Express): void => {
   FavoriteUserFunctionalityRoutes(privateRouter);
   FunctionalityRoutes(privateRouter);
   StakeRoutes(privateRouter);
+  BetanoRoutes(privateRouter);
 
   app.use(publicRouter);
 

@@ -79,5 +79,5 @@
   "terminal.integrated.defaultProfile.windows": "Git Bash",
   "typescript.updateImportsOnFileMove.enabled": "always",
   "workbench.iconTheme": "material-icon-theme",
-  "cSpell.words": ["cnpj", "VEHICLESIZE", "VEHICLETYPE", "NOTCHECKED"]
+  "cSpell.words": ["betano", "cnpj", "NOTCHECKED", "VEHICLESIZE", "VEHICLETYPE"]
 }
