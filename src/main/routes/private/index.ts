@@ -5,3 +5,4 @@ export * from './new-functionality.routes';
 export * from './favorite-user-functionality.routes';
 export * from './functionality.routes';
 export * from './stake.routes';
+export * from './betano.routes';

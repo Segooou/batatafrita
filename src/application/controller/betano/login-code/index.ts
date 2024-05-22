@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable consistent-return */
 /* eslint-disable @typescript-eslint/restrict-plus-operands */
@@ -24,27 +25,27 @@ interface Body {
 }
 
 /**
- * @typedef {object} InsertStakeFirstAccessBody
+ * @typedef {object} InsertStakeLoginCodeBody
  * @property {string} email.required
  * @property {string} password.required
  * @property {number} functionalityId.required
  */
 
 /**
- * POST /stake/first-access
- * @summary First Access Stake
- * @tags Stake
+ * POST /betano/login-code
+ * @summary Login code Betano
+ * @tags Betano
  * @security BearerAuth
  * @example request - payload example
  * {
- *   "email": "JeremiahFoster479550@outlook.com",
- *   "password": "Jeremiah1178"
+ *   "email": "JodiIngram677200@outlook.com",
+ *   "password": "Jodi7002"
  * }
- * @param {InsertStakeFirstAccessBody} request.body.required
+ * @param {InsertStakeLoginCodeBody} request.body.required
  * @return {DefaultResponse} 200 - Successful response - application/json
  * @return {BadRequest} 400 - Bad request response - application/json
  */
-export const stakeFirstAccessController: Controller =
+export const betanoLoginCodeController: Controller =
   () => async (request: Request, response: Response) => {
     try {
       await insertEmailSchema.validate(request, { abortEarly: false });
@@ -64,43 +65,55 @@ export const stakeFirstAccessController: Controller =
 
       const imap = new Imap(imapConfig);
 
+      let lastMatch;
+
       const searchEmail = (): void => {
-        imap.search([['FROM', 'noreply@stake.com']], (err2, results) => {
-          if (err2) throw new Error('');
-          if (results.length > 0) {
-            const fetch = imap.fetch(results, { bodies: '' });
+        imap.search(
+          [
+            ['FROM', 'suporte@betano.com'],
+            ['TEXT', 'Para ativar a conta']
+          ],
+          (err2, results) => {
+            if (err2) throw new Error('');
+            if (results.length > 0) {
+              lastMatch = results[results.length - 1];
 
-            fetch.on('message', (msg) => {
-              msg.on('body', (stream) => {
-                let buffer = '';
+              const fetch = imap.fetch([lastMatch], { bodies: '' });
 
-                stream.on('data', (chunk) => {
-                  buffer += chunk.toString('utf8');
-                });
+              fetch.on('message', (msg) => {
+                msg.on('body', (stream) => {
+                  let buffer = '';
 
-                stream.on('end', () => {
-                  const regex = /href=3D"(?<temp1>[^"]*)"/gu;
-                  const match = buffer.match(regex);
+                  stream.on('data', (chunk) => {
+                    buffer += chunk.toString('utf8');
+                  });
 
-                  if (match)
-                    emails.push(
-                      match?.[1]
-                        ?.replace(/href=3D/gu, '')
-                        ?.replace(/"/gu, '')
-                        ?.replace(/[=]\r\n/gu, '')
-                        ?.replace(/upn=3D/gu, 'upn=')
-                    );
+                  stream.on('end', () => {
+                    const regex = /<strong(?:\s+[^>]*)?>(?<temp1>.*?)<\/strong>/gu;
+
+                    const filtered: string[] = [];
+
+                    buffer.replace(regex, (match2, conteudo) => {
+                      filtered.push(conteudo);
+
+                      return conteudo;
+                    });
+
+                    filtered.forEach((item) => {
+                      if (!item?.startsWith('R$')) emails.push(item);
+                    });
+                  });
                 });
               });
-            });
 
-            fetch.once('end', () => {
-              imap.closeBox(() => {
-                searchNextMailbox();
+              fetch.once('end', () => {
+                imap.closeBox(() => {
+                  searchNextMailbox();
+                });
               });
-            });
-          } else searchNextMailbox();
-        });
+            } else searchNextMailbox();
+          }
+        );
       };
 
       const mailboxesToSearch = ['JUNK', 'INBOX'];
@@ -149,7 +162,7 @@ export const stakeFirstAccessController: Controller =
               }
             });
 
-          return ok({ payload: emails[0], response });
+          return ok({ payload: emails, response });
         }
 
         if (functionalityId)

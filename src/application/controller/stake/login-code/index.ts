@@ -138,6 +138,24 @@ export const stakeLoginCodeController: Controller =
 
       imap.once('end', async () => {
         if (emails.length > 0) {
+          if (functionalityId)
+            await DataSource.action.create({
+              data: {
+                data: {
+                  email,
+                  senha: password
+                },
+                functionalityId,
+                hasError: false,
+                result: emails,
+                userId: request.user.id
+              }
+            });
+
+          return ok({ payload: emails[0], response });
+        }
+
+        if (functionalityId)
           await DataSource.action.create({
             data: {
               data: {
@@ -145,26 +163,11 @@ export const stakeLoginCodeController: Controller =
                 senha: password
               },
               functionalityId,
-              hasError: false,
-              result: emails[0],
+              hasError: true,
+              result: ['E-mail não encontrado'],
               userId: request.user.id
             }
           });
-          return ok({ payload: emails[0], response });
-        }
-
-        await DataSource.action.create({
-          data: {
-            data: {
-              email,
-              senha: password
-            },
-            functionalityId,
-            hasError: true,
-            result: 'E-mail não encontrado',
-            userId: request.user.id
-          }
-        });
         return notFound({
           entity: {
             english: 'Email',
