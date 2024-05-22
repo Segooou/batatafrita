@@ -1,9 +1,11 @@
+/* eslint-disable max-statements */
 /* eslint-disable no-undefined */
 import { ValidationError } from 'yup';
 
 import { DataSource } from '../../../../infra/database';
 import {
   badRequest,
+  deleteFiles,
   errorLogger,
   forbidden,
   messageErrorResponse,
@@ -81,6 +83,23 @@ export const updateUserController: Controller =
       let avatar: string | undefined;
 
       if (typeof request.file?.filename === 'string') avatar = image;
+
+      if (typeof avatar !== 'undefined') {
+        const getUser = await DataSource.user.findUnique({
+          select: {
+            avatar: true
+          },
+          where: {
+            id: Number(request.params.id)
+          }
+        });
+
+        try {
+          if (typeof getUser?.avatar === 'string') deleteFiles([getUser.avatar]);
+        } catch {
+          /* */
+        }
+      }
 
       const payload = await DataSource.user.update({
         data: {
