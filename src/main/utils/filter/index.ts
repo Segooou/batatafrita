@@ -98,6 +98,14 @@ export const getGenericFilter = <QueryType extends string>({
             lte: Number(query[item])
           }
         });
+      else if (item.endsWith('Keyword'))
+        where.push({
+          [item.replace('Keyword', '')]: {
+            keyword: {
+              equals: query[item]
+            }
+          }
+        });
       else if (item.endsWith('Id'))
         where.push({
           [item]: {

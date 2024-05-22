@@ -11,6 +11,13 @@
  */
 
 /**
+ * @typedef {object} DefaultResponse
+ * @property {Messages} message
+ * @property {string} status
+ * @property {string} payload
+ */
+
+/**
  * @typedef {object} BadRequest
  * @property {array<Errors>} errors
  * @property {Messages} message

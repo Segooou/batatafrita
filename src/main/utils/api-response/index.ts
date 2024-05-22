@@ -25,7 +25,7 @@ export const ok = ({
   payload = {}
 }: {
   response: Response;
-  payload?: object;
+  payload?: unknown;
 }): Response =>
   response.status(statusCodeList.OK).json({
     errors: [],
@@ -148,6 +148,15 @@ export const messageErrorResponse = ({
         portuguese: newError?.meta?.modelName
       },
       message,
+      response
+    });
+
+  if (newError?.message === 'LOGIN failed.')
+    return badRequest({
+      message: {
+        english: newError.message,
+        portuguese: 'Não foi possível fazer o login no e-mail'
+      },
       response
     });
 

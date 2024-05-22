@@ -32,6 +32,21 @@ export const deleteUserController: Controller =
 
       const payload = await DataSource.user.update({
         data: {
+          actions: {
+            updateMany: {
+              data: {
+                finishedAt: new Date()
+              },
+              where: {
+                userId: Number(request.params.id)
+              }
+            }
+          },
+          favoriteUserFunctionality: {
+            deleteMany: {
+              userId: Number(request.params.id)
+            }
+          },
           finishedAt: new Date()
         },
         select: userFindParams,
