@@ -24,27 +24,27 @@ interface Body {
 }
 
 /**
- * @typedef {object} InsertStakeFirstAccessBody
+ * @typedef {object} InsertStakeLoginCodeBody
  * @property {string} email.required
  * @property {string} password.required
  * @property {number} functionalityId.required
  */
 
 /**
- * POST /stake/first-access
- * @summary First Access Stake
+ * POST /stake/login-code
+ * @summary Login code Stake
  * @tags Stake
  * @security BearerAuth
  * @example request - payload example
  * {
- *   "email": "JeremiahFoster479550@outlook.com",
- *   "password": "Jeremiah1178"
+ *   "email": "ElizabethAndrews828770@outlook.com",
+ *   "password": "Elizabeth7242"
  * }
- * @param {InsertStakeFirstAccessBody} request.body.required
+ * @param {InsertStakeLoginCodeBody} request.body.required
  * @return {DefaultResponse} 200 - Successful response - application/json
  * @return {BadRequest} 400 - Bad request response - application/json
  */
-export const stakeFirstAccessController: Controller =
+export const stakeLoginCodeController: Controller =
   () => async (request: Request, response: Response) => {
     try {
       await insertEmailSchema.validate(request, { abortEarly: false });
@@ -65,42 +65,41 @@ export const stakeFirstAccessController: Controller =
       const imap = new Imap(imapConfig);
 
       const searchEmail = (): void => {
-        imap.search([['FROM', 'noreply@stake.com']], (err2, results) => {
-          if (err2) throw new Error('');
-          if (results.length > 0) {
-            const fetch = imap.fetch(results, { bodies: '' });
+        imap.search(
+          [
+            ['FROM', 'noreply@stake.com'],
+            ['SUBJECT', 'Entrar em Stake.com']
+          ],
+          (err2, results) => {
+            if (err2) throw new Error('');
+            if (results.length > 0) {
+              const fetch = imap.fetch(results, { bodies: '' });
 
-            fetch.on('message', (msg) => {
-              msg.on('body', (stream) => {
-                let buffer = '';
+              fetch.on('message', (msg) => {
+                msg.on('body', (stream) => {
+                  let buffer = '';
 
-                stream.on('data', (chunk) => {
-                  buffer += chunk.toString('utf8');
-                });
+                  stream.on('data', (chunk) => {
+                    buffer += chunk.toString('utf8');
+                  });
 
-                stream.on('end', () => {
-                  const regex = /href=3D"(?<temp1>[^"]*)"/gu;
-                  const match = buffer.match(regex);
+                  stream.on('end', () => {
+                    const regex = /<td>(?:\d{6})<\/td>/gu;
+                    const match = buffer.match(regex);
 
-                  if (match)
-                    emails.push(
-                      match?.[1]
-                        ?.replace(/href=3D/gu, '')
-                        ?.replace(/"/gu, '')
-                        ?.replace(/[=]\r\n/gu, '')
-                        ?.replace(/upn=3D/gu, 'upn=')
-                    );
+                    if (match) emails.push(match?.[0].replace('<td>', '').replace('</td>', ''));
+                  });
                 });
               });
-            });
 
-            fetch.once('end', () => {
-              imap.closeBox(() => {
-                searchNextMailbox();
+              fetch.once('end', () => {
+                imap.closeBox(() => {
+                  searchNextMailbox();
+                });
               });
-            });
-          } else searchNextMailbox();
-        });
+            } else searchNextMailbox();
+          }
+        );
       };
 
       const mailboxesToSearch = ['JUNK', 'INBOX'];
