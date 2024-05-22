@@ -34,6 +34,7 @@ import type { functionalityQueryFields } from '../../../../data/validation';
  * @param {string} name.query
  * @param {string} description.query
  * @param {number} platformId.query
+ * @param {string} platformKeyword.query
  * @param {integer} page.query
  * @param {integer} limit.query
  * @param {string} startDate.query (Ex: 2024-01-01).

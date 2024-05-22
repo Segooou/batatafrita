@@ -37,7 +37,7 @@ import type { Request, Response } from 'express';
  */
 export const findFavoriteUserFunctionalityController: Controller =
   () =>
-  async ({ query }: Request, response: Response) => {
+  async ({ query, user }: Request, response: Response) => {
     try {
       const { skip, take } = getPagination({ query });
 
@@ -48,7 +48,7 @@ export const findFavoriteUserFunctionalityController: Controller =
         where: {
           favoriteUserFunctionality: {
             some: {
-              userId: Number(query.userId)
+              userId: typeof query.userId === 'string' ? Number(query.userId) : user.id
             }
           }
         }
@@ -58,7 +58,7 @@ export const findFavoriteUserFunctionalityController: Controller =
         where: {
           favoriteUserFunctionality: {
             some: {
-              userId: Number(query.userId)
+              userId: typeof query.userId === 'string' ? Number(query.userId) : user.id
             }
           }
         }

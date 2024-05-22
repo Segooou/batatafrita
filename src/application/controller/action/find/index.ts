@@ -1,3 +1,4 @@
+/* eslint-disable no-undefined */
 import { DataSource } from '../../../../infra/database';
 import { actionFindParams } from '../../../../data/search';
 import { actionListQueryFields } from '../../../../data/validation';
@@ -32,7 +33,9 @@ import type { actionQueryFields } from '../../../../data/validation';
  * @tags Action
  * @security BearerAuth
  * @param {number} functionalityId.query
+ * @param {number} userId.query
  * @param {boolean} hasErrorBoolean.query
+ * @param {boolean} all.query
  * @param {integer} page.query
  * @param {integer} limit.query
  * @param {string} startDate.query (Ex: 2024-01-01).
@@ -46,7 +49,7 @@ import type { actionQueryFields } from '../../../../data/validation';
  */
 export const findActionController: Controller =
   () =>
-  async ({ query }: Request, response: Response) => {
+  async ({ query, user }: Request, response: Response) => {
     try {
       const { skip, take } = getPagination({ query });
       const { orderBy, where } = getGenericFilter<actionQueryFields>({
@@ -59,11 +62,11 @@ export const findActionController: Controller =
         select: actionFindParams,
         skip,
         take,
-        where
+        where: { userId: query.all === 'true' ? undefined : { equals: user.id }, ...where }
       });
 
       const totalElements = await DataSource.action.count({
-        where
+        where: { userId: query.all === 'true' ? undefined : { equals: user.id }, ...where }
       });
 
       return ok({

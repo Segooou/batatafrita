@@ -1,27 +1,19 @@
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
 import { DataSource } from '../../../../infra/database';
 import { ValidationError } from 'yup';
 import {
   errorLogger,
   messageErrorResponse,
   normalizeText,
+  notFound,
   ok,
   validationErrorResponse
 } from '../../../../main/utils';
 import { functionalityFindParams } from '../../../../data/search';
 import { insertFunctionalitySchema } from '../../../../data/validation';
 import type { Controller } from '../../../../domain/protocols';
-import type { InputProps, InputType } from '@prisma/client';
+import type { InputProps } from '@prisma/client';
 import type { Request, Response } from 'express';
-
-export interface InputProps2 {
-  label: string;
-  placeholder: string;
-  isRequired: boolean;
-  error: boolean;
-  type: InputType;
-  mask?: string;
-  maskLength?: number;
-}
 
 interface Body {
   name: string;
@@ -37,6 +29,7 @@ interface Body {
  * @property {string} placeholder.required
  * @property {boolean} isRequired.required
  * @property {string} type.required
+ * @property {string} formValue.required
  * @property {string} mask
  * @property {number} maskLength
  */
@@ -73,6 +66,24 @@ export const insertFunctionalityController: Controller =
 
       const { apiRoute, inputProps, name, platformId, description } = request.body as Body;
 
+      const platform = await DataSource.platform.findUnique({
+        select: {
+          keyword: true
+        },
+        where: {
+          id: platformId
+        }
+      });
+
+      if (platform === null)
+        return notFound({
+          entity: {
+            english: 'Platform',
+            portuguese: 'Plataforma'
+          },
+          response
+        });
+
       const payload = await DataSource.functionality.create({
         data: {
           apiRoute,
@@ -82,7 +93,7 @@ export const insertFunctionalityController: Controller =
               data: inputProps
             }
           },
-          keyword: normalizeText(name),
+          keyword: `${normalizeText(name)}-${platform.keyword}`,
           name,
           platformId
         },

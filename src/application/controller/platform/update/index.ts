@@ -25,7 +25,7 @@ interface Body {
  * @typedef {object} UpdatePlatformBody
  * @property {string} name
  * @property {string} description
- * @property {string} image - image - binary
+ * @property {string} image
  */
 
 /**
@@ -40,7 +40,7 @@ interface Body {
  * @summary Update Platform
  * @tags Platform
  * @security BearerAuth
- * @param {UpdatePlatformBody} request.body - platform info - multipart/form-data
+ * @param {UpdatePlatformBody} request.body
  * @param {number} id.path.required
  * @return {UpdatePlatformResponse} 200 - Successful response - application/json
  * @return {BadRequest} 400 - Bad request response - application/json

@@ -22,7 +22,7 @@ interface Body {
  * @typedef {object} InsertPlatformBody
  * @property {string} name.required
  * @property {string} description
- * @property {string} image - image - binary
+ * @property {string} image.required
  */
 
 /**
@@ -37,7 +37,7 @@ interface Body {
  * @summary Insert Platform
  * @tags Platform
  * @security BearerAuth
- * @param {InsertPlatformBody} request.body.required - platform info - multipart/form-data
+ * @param {InsertPlatformBody} request.body.required
  * @return {InsertPlatformResponse} 200 - Successful response - application/json
  * @return {BadRequest} 400 - Bad request response - application/json
  */

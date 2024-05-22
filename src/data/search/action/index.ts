@@ -2,8 +2,8 @@ import { functionalityFindParams } from '../functionality';
 import type { Prisma } from '@prisma/client';
 
 export const actionFindParams: Prisma.ActionSelect = {
-  action: true,
   createdAt: true,
+  data: true,
   finishedAt: true,
   functionality: {
     select: functionalityFindParams(false)

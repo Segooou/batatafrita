@@ -16,7 +16,6 @@ import type { InputProps } from '@prisma/client';
 import type { Request, Response } from 'express';
 
 interface Body {
-  name?: string;
   apiRoute?: string;
   description?: string;
   platformId?: number;
@@ -30,13 +29,13 @@ interface Body {
  * @property {boolean} isRequired.required
  * @property {boolean} error.required
  * @property {string} type.required
+ * @property {string} formValue.required
  * @property {string} mask
  * @property {number} maskLength
  */
 
 /**
  * @typedef {object} UpdateFunctionalityBody
- * @property {string} name
  * @property {string} description
  * @property {number} platformId
  * @property {boolean} wasRaised
@@ -66,7 +65,7 @@ export const updateFunctionalityController: Controller =
     try {
       await updateFunctionalitySchema.validate(request, { abortEarly: false });
 
-      const { apiRoute, description, inputProps, name, platformId } = request.body as Body;
+      const { apiRoute, description, inputProps, platformId } = request.body as Body;
 
       if (typeof inputProps !== 'undefined' && inputProps?.length > 0)
         await DataSource.inputProps.deleteMany({
@@ -82,7 +81,6 @@ export const updateFunctionalityController: Controller =
               data: inputProps ?? []
             }
           },
-          name,
           platformId
         },
         select: functionalityFindParams(true),

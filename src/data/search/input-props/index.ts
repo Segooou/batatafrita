@@ -4,6 +4,7 @@ export const inputPropsFindParams: Prisma.InputPropsSelect = {
   createdAt: true,
   error: true,
   finishedAt: true,
+  formValue: true,
   id: true,
   isRequired: true,
   label: true,

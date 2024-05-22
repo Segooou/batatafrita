@@ -33,7 +33,7 @@ enum Role {
 model Platform {
   id          Int     @id @default(autoincrement())
   name        String
-  keyword     String
+  keyword     String  @unique
   image       String
   description String?
 
@@ -50,7 +50,7 @@ model Platform {
 model Functionality {
   id          Int     @id @default(autoincrement())
   name        String
-  keyword     String
+  keyword     String  @unique
   description String?
   apiRoute    String
 
@@ -72,6 +72,7 @@ model InputProps {
   id          Int       @id @default(autoincrement())
   label       String
   placeholder String
+  formValue   String
   isRequired  Boolean
   error       Boolean   @default(false)
   type        InputType
@@ -107,10 +108,10 @@ model FavoriteUserFunctionality {
 }
 
 model Action {
-  id       Int        @id @default(autoincrement())
+  id       Int     @id @default(autoincrement())
   result   String
-  hasError Boolean    @default(false)
-  action   ActionEnum @default(none)
+  hasError Boolean @default(false)
+  data     Json?
 
   user          User          @relation(fields: [userId], references: [id])
   functionality Functionality @relation(fields: [functionalityId], references: [id])
@@ -123,11 +124,6 @@ model Action {
   updatedAt  DateTime  @updatedAt @db.Timestamptz()
 
   @@map("action")
-}
-
-enum ActionEnum {
-  copy
-  none
 }
 
 model NewFunctionality {
