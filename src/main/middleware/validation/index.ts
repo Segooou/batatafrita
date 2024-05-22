@@ -22,7 +22,11 @@ export const validateTokenMiddleware: Controller =
       const { SECRET } = env.JWT;
       const { user } = verify(accessToken, SECRET) as { user: tokenInput };
 
-      if (typeof user.id === 'undefined' || typeof user.email === 'undefined')
+      if (
+        typeof user.id === 'undefined' ||
+        typeof user.username === 'undefined' ||
+        typeof user.role === 'undefined'
+      )
         return unauthorized({ response });
 
       const account = await DataSource.user.findFirst({

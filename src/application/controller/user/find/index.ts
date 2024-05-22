@@ -31,12 +31,13 @@ import type { userQueryFields } from '../../../../data/validation';
  * @summary Find Users
  * @tags User
  * @security BearerAuth
- * @param {string} email.query
+ * @param {string} username.query
+ * @param {string} roleEnum.query - enum:common,admin
  * @param {integer} page.query
  * @param {integer} limit.query
  * @param {string} startDate.query (Ex: 2024-01-01).
  * @param {string} endDate.query (Ex: 2024-01-01).
- * @param {string} orderBy.query - enum:email,createdAt,updatedAt
+ * @param {string} orderBy.query - enum:username,role,createdAt,updatedAt
  * @param {string} sort.query - enum:asc,desc
  * @param {boolean} history.query
  * @return {FindUserResponse} 200 - Successful response - application/json

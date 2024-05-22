@@ -3,10 +3,12 @@
 /* eslint-disable @typescript-eslint/restrict-plus-operands */
 /* eslint-disable @typescript-eslint/strict-boolean-expressions */
 /* eslint-disable max-nested-callbacks */
+import { DataSource } from '../../../../infra/database';
 import { ValidationError } from 'yup';
 import {
   errorLogger,
   messageErrorResponse,
+  notFound,
   ok,
   validationErrorResponse
 } from '../../../../main/utils';
@@ -18,40 +20,35 @@ import type { Request, Response } from 'express';
 interface Body {
   email: string;
   password: string;
+  functionalityId: number;
 }
 
 /**
- * @typedef {object} InsertEmailBody
+ * @typedef {object} InsertStakeFirstAccessBody
  * @property {string} email.required
  * @property {string} password.required
+ * @property {number} functionalityId.required
  */
 
 /**
- * @typedef {object} InsertEmailResponse
- * @property {Messages} message
- * @property {string} status
- * @property {Email} payload
- */
-
-/**
- * POST /email
- * @summary Insert Email
- * @tags Email
+ * POST /stake/first-access
+ * @summary First Access Stake
+ * @tags Stake
  * @example request - payload example
  * {
  *   "email": "JeremiahFoster479550@outlook.com",
  *   "password": "Jeremiah1178"
  * }
- * @param {InsertEmailBody} request.body.required
- * @return {InsertEmailResponse} 200 - Successful response - application/json
+ * @param {InsertStakeFirstAccessBody} request.body.required
+ * @return {DefaultResponse} 200 - Successful response - application/json
  * @return {BadRequest} 400 - Bad request response - application/json
  */
-export const insertEmailController: Controller =
+export const stakeFirstAccessController: Controller =
   () => async (request: Request, response: Response) => {
     try {
       await insertEmailSchema.validate(request, { abortEarly: false });
 
-      const { email, password } = request.body as Body;
+      const { email, password, functionalityId } = request.body as Body;
 
       const emails: string[] = [];
 
@@ -131,13 +128,46 @@ export const insertEmailController: Controller =
         });
       });
 
-      imap.once('error', (error: unknown) => {
+      imap.once('error', () => {
         imap.end();
-        return messageErrorResponse({ error, response });
       });
 
-      imap.once('end', () => {
-        return ok({ payload: emails, response });
+      imap.once('end', async () => {
+        if (emails.length > 0) {
+          await DataSource.action.create({
+            data: {
+              data: {
+                email,
+                senha: password
+              },
+              functionalityId,
+              hasError: false,
+              result: emails[0],
+              userId: request.user.id
+            }
+          });
+          return ok({ payload: emails[0], response });
+        }
+
+        await DataSource.action.create({
+          data: {
+            data: {
+              email,
+              senha: password
+            },
+            functionalityId,
+            hasError: true,
+            result: 'E-mail não encontrado',
+            userId: request.user.id
+          }
+        });
+        return notFound({
+          entity: {
+            english: 'Email',
+            portuguese: 'E-mail'
+          },
+          response
+        });
       });
 
       imap.connect();

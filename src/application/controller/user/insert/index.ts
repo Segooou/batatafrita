@@ -7,8 +7,8 @@ import {
   ok,
   validationErrorResponse
 } from '../../../../main/utils';
-import { env } from 'process';
-import { hasUserByEmail } from '../../../helper';
+import { env } from '../../../../main/config/env';
+import { hasUserByUsername } from '../../../helper';
 import { hash } from 'bcrypt';
 import { insertUserSchema } from '../../../../data/validation';
 import { messages } from '../../../../domain/helpers';
@@ -17,13 +17,13 @@ import type { Controller } from '../../../../domain/protocols';
 import type { Request, Response } from 'express';
 
 interface Body {
-  email: string;
+  username: string;
   password: string;
 }
 
 /**
  * @typedef {object} InsertUserBody
- * @property {string} email.required
+ * @property {string} username.required
  * @property {string} password.required
  */
 
@@ -40,7 +40,7 @@ interface Body {
  * @tags User
  * @example request - payload example
  * {
- *   "email": "admin@admin",
+ *   "username": "segou",
  *   "password": "123456"
  * }
  * @param {InsertUserBody} request.body.required
@@ -52,17 +52,17 @@ export const insertUserController: Controller =
     try {
       await insertUserSchema.validate(request, { abortEarly: false });
 
-      const { email, password } = request.body as Body;
+      const { username, password } = request.body as Body;
 
-      if (await hasUserByEmail(email))
+      if (await hasUserByUsername(username))
         return badRequest({ message: messages.default.userAlreadyExists, response });
 
       const { HASH_SALT } = env;
 
-      const hashedPassword = await hash(password, Number(HASH_SALT));
+      const hashedPassword = await hash(password, HASH_SALT);
 
       const payload = await DataSource.user.create({
-        data: { email, password: hashedPassword },
+        data: { password: hashedPassword, username },
         select: userFindParams
       });
 

@@ -1,4 +1,7 @@
+import type { Role } from '@prisma/client';
+
 export interface tokenInput {
   id: number;
-  email: string;
+  username: string;
+  role: Role;
 }

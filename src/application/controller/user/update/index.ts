@@ -1,3 +1,4 @@
+/* eslint-disable no-undefined */
 import { ValidationError } from 'yup';
 
 import { DataSource } from '../../../../infra/database';
@@ -10,8 +11,8 @@ import {
   validationErrorResponse,
   whereById
 } from '../../../../main/utils';
-import { env } from 'process';
-import { hasUserByEmail } from '../../../helper';
+import { env } from '../../../../main/config/env';
+import { hasUserByUsername } from '../../../helper';
 import { hash } from 'bcrypt';
 import { messages } from '../../../../domain/helpers';
 import { updateUserSchema } from '../../../../data/validation';
@@ -21,13 +22,15 @@ import type { Request, Response } from 'express';
 
 interface Body {
   password?: string;
-  email?: string;
+  username?: string;
+  image?: string;
 }
 
 /**
  * @typedef {object} UpdateUserBody
- * @property {string} email
+ * @property {string} username
  * @property {string} password
+ * @property {string} image - avatar - binary
  */
 
 /**
@@ -42,7 +45,7 @@ interface Body {
  * @summary Update User
  * @tags User
  * @security BearerAuth
- * @param {UpdateUserBody} request.body
+ * @param {UpdateUserBody} request.body - user info - multipart/form-data
  * @param {number} id.path.required
  * @return {UpdateUserResponse} 200 - Successful response - application/json
  * @return {BadRequest} 400 - Bad request response - application/json
@@ -60,22 +63,31 @@ export const updateUserController: Controller =
           response
         });
 
-      const { email, password } = request.body as Body;
+      const { username, password, image } = request.body as Body;
 
-      if (await hasUserByEmail(email))
+      if (await hasUserByUsername(username))
         return badRequest({ message: messages.default.userAlreadyExists, response });
 
       let newPassword: string | undefined;
 
-      if (typeof password === 'string') {
+      if (typeof password === 'string' && password.length > 0) {
         const { HASH_SALT } = env;
 
-        const hashedPassword = await hash(password, Number(HASH_SALT));
+        const hashedPassword = await hash(password, HASH_SALT);
 
         newPassword = hashedPassword;
       }
+
+      let avatar: string | undefined;
+
+      if (typeof request.file?.filename === 'string') avatar = image;
+
       const payload = await DataSource.user.update({
-        data: { email, password: newPassword },
+        data: {
+          avatar,
+          password: newPassword,
+          username: typeof username === 'string' && username.length > 0 ? username : undefined
+        },
         select: userFindParams,
         where: whereById(request.params.id)
       });
