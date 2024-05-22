@@ -9,7 +9,7 @@ import type { Request, Response } from 'express';
  * @summary Find one Functionality ny keyword
  * @tags Functionality
  * @security BearerAuth
- * @param {number} id.path.required
+ * @param {string} id.path.required
  * @return {FindOneFunctionalityResponse} 200 - Successful response - application/json
  * @return {BadRequest} 400 - Bad request response - application/json
  * @return {UnauthorizedRequest} 401 - Unauthorized response - application/json

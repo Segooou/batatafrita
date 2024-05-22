@@ -3,6 +3,7 @@ export type newFunctionalityQueryFields =
   | 'name'
   | 'platformId'
   | 'userId'
+  | 'wasRaised'
   | 'wasRaisedBoolean';
 
 export const newFunctionalityListQueryFields: newFunctionalityQueryFields[] = [
@@ -10,5 +11,6 @@ export const newFunctionalityListQueryFields: newFunctionalityQueryFields[] = [
   'description',
   'userId',
   'platformId',
+  'wasRaised',
   'wasRaisedBoolean'
 ];
