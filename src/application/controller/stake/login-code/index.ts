@@ -152,7 +152,7 @@ export const stakeLoginCodeController: Controller =
               }
             });
 
-          return ok({ payload: emails[0], response });
+          return ok({ payload: emails, response });
         }
 
         if (functionalityId)
