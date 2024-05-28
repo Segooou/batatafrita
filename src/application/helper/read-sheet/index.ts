@@ -1,21 +1,21 @@
-import { google } from 'googleapis'; 
+/* eslint-disable @typescript-eslint/no-misused-promises */
+import { env } from '../../../main/config/env';
+import { google } from 'googleapis';
 
 export interface functionToExecProps {
   email: string;
   password: string;
-  functionalityId: number;
 }
 
 export interface readGoogleSheetProps {
-  sheetId: string;
+  spreadsheetId: string;
+  sheetName: string;
   email: string;
   password: string;
-  sheetName: string;
+  resultColumn: string;
   startRow: number;
   endRow: number;
-  resultColumn: string;
-  functionalityId: number;
-  functionToExec: ({ email, password, functionalityId }: functionToExecProps) => string[];
+  functionToExec: ({ email, password }: functionToExecProps) => Promise<string[]>;
 }
 
 export const readGoogleSheet = async ({
@@ -24,15 +24,16 @@ export const readGoogleSheet = async ({
   email,
   functionToExec,
   password,
-  functionalityId,
-  sheetId,
+  spreadsheetId,
   resultColumn,
   startRow
 }: readGoogleSheetProps): Promise<void> => {
   const range = `'${sheetName}'!${email}${startRow}:${password}${endRow}`;
 
+  const { credentials } = env;
+
   const auth = new google.auth.GoogleAuth({
-    credentials:{},
+    credentials,
     scopes: ['https://www.googleapis.com/auth/spreadsheets']
   });
 
@@ -43,30 +44,38 @@ export const readGoogleSheet = async ({
 
   const response = await sheets.spreadsheets.values.get({
     range,
-    spreadsheetId: sheetId
+    spreadsheetId
   });
 
   const rows = response.data.values;
 
-  if (typeof rows?.length === 'number' && rows?.length > 0)
-    rows.forEach((row, rowIndex): void => {
-      const value = functionToExec({ email: row[0], functionalityId, password: row[1] });
+  if (typeof rows?.length === 'number' && rows?.length > 0) {
+    const results = await Promise.all(
+      rows.map(async (row) => {
+        const result = await functionToExec({
+          email: row[0],
+          password: row[1]
+        });
 
-      rows[rowIndex] = value;
+        return result;
+      })
+    );
+
+    const splitColumn = resultColumn.split(':');
+    const startColumn = splitColumn[0];
+    const endColumn = splitColumn[splitColumn.length - 1];
+
+    const updateRange = `'${sheetName}'!${startColumn}${startRow}:${endColumn}${
+      startRow + results.length - 1
+    }`;
+
+    await sheets.spreadsheets.values.update({
+      range: updateRange,
+      requestBody: {
+        values: results
+      },
+      spreadsheetId,
+      valueInputOption: 'RAW'
     });
-
-  const splitColumn = resultColumn.split(':');
-  const startColumn = splitColumn[0];
-  const endColumn = splitColumn[splitColumn.length - 1];
-
-  const updateRange = `'${sheetName}'!${startColumn}${startRow}:${endColumn}${endRow}`;
-
-  await sheets.spreadsheets.values.update({
-    range: updateRange,
-    requestBody: {
-      values: rows
-    },
-    spreadsheetId: sheetId,
-    valueInputOption: 'RAW'
-  });
+  }
 };
