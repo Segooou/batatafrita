@@ -8,6 +8,7 @@ import { ValidationError } from 'yup';
 import {
   errorLogger,
   messageErrorResponse,
+  notFound,
   ok,
   validationErrorResponse
 } from '../../../../main/utils';
@@ -72,12 +73,15 @@ export const stakeAccountBannedController: Controller =
           (err2, results) => {
             if (err2) throw new Error('');
             if (results.length > 0) {
-              emails.push('Conta foi suspensa');
+              if (emails.length === 0) emails.push('Conta foi suspensa');
 
               imap.closeBox(() => {
                 searchNextMailbox();
               });
-            } else searchNextMailbox();
+            } else {
+              if (emails.length === 0) emails.push('Conta OK');
+              searchNextMailbox();
+            }
           }
         );
       };
@@ -139,14 +143,17 @@ export const stakeAccountBannedController: Controller =
                 senha: password
               },
               functionalityId,
-              hasError: false,
-              result: ['Conta OK'],
+              hasError: true,
+              result: ['E-mail não encontrado'],
               userId: request.user.id
             }
           });
 
-        return ok({
-          payload: ['Conta OK'],
+        return notFound({
+          entity: {
+            english: 'Email',
+            portuguese: 'E-mail'
+          },
           response
         });
       });
