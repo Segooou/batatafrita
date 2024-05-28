@@ -63,9 +63,7 @@ export const readGoogleSheet = async ({
     const startColumn = splitColumn[0];
     const endColumn = splitColumn[splitColumn.length - 1];
 
-    const updateRange = `'${sheetName}'!${startColumn}${startRow}:${endColumn}${
-      startRow + results.length - 1
-    }`;
+    const updateRange = `'${sheetName}'!${startColumn}${startRow}:${endColumn}${endRow}`;
 
     await sheets.spreadsheets.values.update({
       range: updateRange,

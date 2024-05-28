@@ -77,7 +77,7 @@ export const findEmail = async ({
           console.info('1', err);
           hasError = true;
           onError({ data, result: [err?.message] });
-          return;
+          imap.end();
         }
 
         if (results.length > 0) {
@@ -121,7 +121,7 @@ export const findEmail = async ({
             console.info('2', err);
             hasError = true;
             onError({ data, result: [err?.message] });
-            return;
+            imap.end();
           }
 
           if (box.messages.total > 0) searchEmail().then(resolve).catch(reject);
@@ -140,7 +140,7 @@ export const findEmail = async ({
           console.info('3', err);
           hasError = true;
           onError({ data, result: [err?.message] });
-          return;
+          imap.end();
         }
 
         if (box.messages.total > 0)
