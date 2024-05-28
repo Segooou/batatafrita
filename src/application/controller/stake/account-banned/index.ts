@@ -1,26 +1,25 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/no-floating-promises */
+/* eslint-disable no-negated-condition */
+/* eslint-disable no-undefined */
 /* eslint-disable consistent-return */
-/* eslint-disable @typescript-eslint/restrict-plus-operands */
-/* eslint-disable @typescript-eslint/strict-boolean-expressions */
-/* eslint-disable max-nested-callbacks */
 import { DataSource } from '../../../../infra/database';
-import { ValidationError } from 'yup';
+import { badRequest, errorLogger, messageErrorResponse } from '../../../../main/utils';
+import { convertResult } from '../../../helper';
+import { findEmail } from '../../../helper/find-email';
 import {
-  errorLogger,
-  messageErrorResponse,
-  notFound,
-  ok,
-  validationErrorResponse
-} from '../../../../main/utils';
-import { insertEmailSchema } from '../../../../data/validation';
-import Imap from 'imap';
+  type functionToExecProps,
+  readGoogleSheet,
+  type readGoogleSheetProps
+} from '../../../helper/read-sheet';
 import type { Controller } from '../../../../domain/protocols';
+import type { OnEndProps, OnFindEmailProps, dataProps } from '../../../helper/find-email';
 import type { Request, Response } from 'express';
 
 interface Body {
   email: string;
   password: string;
   functionalityId: number;
+  googleSheets?: readGoogleSheetProps;
 }
 
 /**
@@ -28,6 +27,7 @@ interface Body {
  * @property {string} email.required
  * @property {string} password.required
  * @property {number} functionalityId.required
+ * @property {GoogleSheets} googleSheets
  */
 
 /**
@@ -35,11 +35,6 @@ interface Body {
  * @summary Account Banned Stake
  * @tags Stake
  * @security BearerAuth
- * @example request - payload example
- * {
- *   "email": "AlexanderAdamson152272@outlook.com",
- *   "password": "Alexander8635"
- * }
  * @param {InsertStakeAccountBannedBody} request.body.required
  * @return {DefaultResponse} 200 - Successful response - application/json
  * @return {BadRequest} 400 - Bad request response - application/json
@@ -47,122 +42,92 @@ interface Body {
 export const stakeAccountBannedController: Controller =
   () => async (request: Request, response: Response) => {
     try {
-      await insertEmailSchema.validate(request, { abortEarly: false });
+      const { email, password, googleSheets, functionalityId } = request.body as Body;
 
-      const { email, password, functionalityId } = request.body as Body;
+      response.setHeader('Content-Type', 'text/plain');
 
-      const emails: string[] = [];
+      const finalResults: dataProps[] = [];
 
-      const imapConfig = {
-        connTimeout: 999999999,
-        host: 'outlook.office365.com',
-        password,
-        port: 993,
-        tls: true,
-        user: email
-      };
+      let error: dataProps | undefined;
 
-      const imap = new Imap(imapConfig);
+      let len = -1;
 
-      const searchEmail = (): void => {
-        imap.search(
-          [
-            ['FROM', 'noreply@stake.com'],
-            ['SUBJECT', 'A sua conta foi suspensa']
-          ],
-          (err2, results) => {
-            if (err2) throw new Error('');
-            if (results.length > 0) {
-              if (emails.length === 0) emails.push('Conta foi suspensa');
+      if (typeof googleSheets !== 'undefined')
+        len = googleSheets.endRow - googleSheets.startRow + 1;
 
-              imap.closeBox(() => {
-                searchNextMailbox();
-              });
-            } else {
-              if (emails.length === 0) emails.push('Conta OK');
-              searchNextMailbox();
-            }
-          }
-        );
-      };
+      const finishFunction = async (): Promise<void> => {
+        if (typeof functionalityId === 'number') {
+          const data = finalResults.map((item) => ({
+            data: item.data,
+            functionalityId,
+            result: item.result,
+            userId: request.user.id
+          }));
 
-      const mailboxesToSearch = ['JUNK', 'INBOX'];
-
-      const searchNextMailbox = (): void => {
-        if (mailboxesToSearch.length > 0) {
-          const nextMailbox = mailboxesToSearch.shift();
-
-          imap.openBox(nextMailbox!, true, (err, box) => {
-            if (err) throw new Error('');
-
-            if (box.messages.total > 0) searchEmail();
-            else searchNextMailbox();
+          await DataSource.action.createMany({
+            data,
+            skipDuplicates: true
           });
-        } else imap.end();
-      };
-
-      imap.once('ready', () => {
-        const initialMailbox = mailboxesToSearch.shift();
-
-        imap.openBox(initialMailbox!, true, (err, box) => {
-          if (err) throw new Error('');
-
-          if (box.messages.total > 0) searchEmail();
-          else searchNextMailbox();
-        });
-      });
-
-      imap.once('error', () => {
-        imap.end();
-      });
-
-      imap.once('end', async () => {
-        if (emails.length > 0) {
-          if (functionalityId)
-            await DataSource.action.create({
-              data: {
-                data: {
-                  email,
-                  senha: password
-                },
-                functionalityId,
-                hasError: true,
-                result: emails,
-                userId: request.user.id
-              }
-            });
-
-          return ok({ payload: emails, response });
         }
 
-        if (functionalityId)
-          await DataSource.action.create({
-            data: {
-              data: {
-                email,
-                senha: password
-              },
-              functionalityId,
-              hasError: true,
-              result: ['E-mail não encontrado'],
-              userId: request.user.id
-            }
-          });
+        response.end();
+      };
 
-        return notFound({
-          entity: {
-            english: 'Email',
-            portuguese: 'E-mail'
-          },
-          response
+      const onError = ({ data, result }: dataProps): void => {
+        error = { data, result: convertResult(result) };
+      };
+
+      const onFindEmail = ({ result }: OnFindEmailProps): void => {
+        result.push('Conta foi suspensa');
+      };
+
+      const onEnd = ({ data, result, hasError }: OnEndProps): void => {
+        let newResult: dataProps | undefined;
+
+        if (hasError && typeof error !== 'undefined') {
+          newResult = { ...error };
+          error = undefined;
+        } else if (result.length === 0) newResult = { data, result: ['Conta ok'] };
+        else newResult = { data, result };
+
+        finalResults.push(newResult);
+
+        response.write(JSON.stringify(newResult));
+
+        if (finalResults.length === len || len === -1) finishFunction();
+      };
+
+      const functionToExec = async (data: functionToExecProps): Promise<string[]> => {
+        const res = await findEmail({
+          email: data.email,
+          from: 'noreply@stake.com',
+          onEnd,
+          onError,
+          onFindEmail,
+          password: data.password,
+          subject: 'A sua conta foi suspensa'
         });
-      });
 
-      imap.connect();
+        return res;
+      };
+
+      if (typeof googleSheets !== 'undefined')
+        if (googleSheets.endRow >= googleSheets.startRow)
+          await readGoogleSheet({
+            ...googleSheets,
+            functionToExec
+          });
+        else
+          badRequest({
+            message: {
+              english: 'Final de linha tem que ser maior que início',
+              portuguese: 'Final de linha tem que ser maior que início'
+            },
+            response
+          });
+      else await functionToExec({ email, password });
     } catch (error) {
       errorLogger(error);
-
-      if (error instanceof ValidationError) return validationErrorResponse({ error, response });
 
       return messageErrorResponse({ error, response });
     }

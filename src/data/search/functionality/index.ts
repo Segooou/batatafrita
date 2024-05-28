@@ -8,6 +8,7 @@ export const functionalityFindParams = (hasInputProps: boolean): Prisma.Function
   createdAt: true,
   description: true,
   finishedAt: true,
+  googleSheets: true,
   id: true,
   inputProps: hasInputProps
     ? {

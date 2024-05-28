@@ -19,6 +19,7 @@ interface Body {
   apiRoute?: string;
   description?: string;
   platformId?: number;
+  googleSheets?: number;
   inputProps?: InputProps[];
 }
 
@@ -38,6 +39,7 @@ interface Body {
  * @typedef {object} UpdateFunctionalityBody
  * @property {string} description
  * @property {number} platformId
+ * @property {number} googleSheets
  * @property {boolean} wasRaised
  */
 
@@ -65,7 +67,7 @@ export const updateFunctionalityController: Controller =
     try {
       await updateFunctionalitySchema.validate(request, { abortEarly: false });
 
-      const { apiRoute, description, inputProps, platformId } = request.body as Body;
+      const { apiRoute, description, googleSheets, inputProps, platformId } = request.body as Body;
 
       if (typeof inputProps !== 'undefined' && inputProps?.length > 0)
         await DataSource.inputProps.deleteMany({
@@ -76,6 +78,7 @@ export const updateFunctionalityController: Controller =
         data: {
           apiRoute,
           description,
+          googleSheets,
           inputProps: {
             createMany: {
               data: inputProps ?? []

@@ -83,6 +83,7 @@ export const authenticateUserController: Controller =
             avatar: user.avatar,
             createdAt: user.createdAt,
             id: user.id,
+            role: user.role,
             updatedAt: user.updatedAt,
             username: user.username
           }

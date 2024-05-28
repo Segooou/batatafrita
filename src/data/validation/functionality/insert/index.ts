@@ -48,6 +48,10 @@ export const insertFunctionalitySchema = yup.object().shape({
       english: 'description',
       portuguese: 'descrição'
     }),
+    googleSheets: numberNotRequired({
+      english: 'google sheets',
+      portuguese: 'google sheets'
+    }),
     inputProps: arrayRequired(inputPropsSchema, {
       english: 'input props',
       portuguese: 'propriedades dos inputs'

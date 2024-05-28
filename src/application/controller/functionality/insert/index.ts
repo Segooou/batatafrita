@@ -20,6 +20,7 @@ interface Body {
   apiRoute: string;
   description?: string;
   platformId: number;
+  googleSheets?: number;
   inputProps: InputProps[];
 }
 
@@ -39,6 +40,7 @@ interface Body {
  * @property {string} name.required
  * @property {string} apiRoute.required
  * @property {string} description
+ * @property {number} googleSheets
  * @property {array<InputPropsInsert>} inputProps.required
  * @property {number} platformId.required
  */
@@ -64,7 +66,8 @@ export const insertFunctionalityController: Controller =
     try {
       await insertFunctionalitySchema.validate(request, { abortEarly: false });
 
-      const { apiRoute, inputProps, name, platformId, description } = request.body as Body;
+      const { apiRoute, inputProps, name, platformId, googleSheets, description } =
+        request.body as Body;
 
       const platform = await DataSource.platform.findUnique({
         select: {
@@ -88,6 +91,7 @@ export const insertFunctionalityController: Controller =
         data: {
           apiRoute,
           description,
+          googleSheets,
           inputProps: {
             createMany: {
               data: inputProps
