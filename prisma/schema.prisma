@@ -48,11 +48,12 @@ model Platform {
 }
 
 model Functionality {
-  id          Int     @id @default(autoincrement())
-  name        String
-  keyword     String  @unique
-  description String?
-  apiRoute    String
+  id           Int     @id @default(autoincrement())
+  name         String
+  keyword      String  @unique
+  description  String?
+  googleSheets Int?
+  apiRoute     String
 
   platform                  Platform                    @relation(fields: [platformId], references: [id])
   inputProps                InputProps[]

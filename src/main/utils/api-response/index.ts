@@ -151,7 +151,10 @@ export const messageErrorResponse = ({
       response
     });
 
-  if (newError?.message === 'LOGIN failed.')
+  if (
+    newError?.message === 'LOGIN failed.' ||
+    newError?.message === 'Timed out while authenticating with server'
+  )
     return badRequest({
       message: {
         english: newError.message,

@@ -1,15 +1,16 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable no-negated-condition */
+/* eslint-disable no-undefined */
 /* eslint-disable consistent-return */
-/* eslint-disable @typescript-eslint/restrict-plus-operands */
-/* eslint-disable @typescript-eslint/strict-boolean-expressions */
-/* eslint-disable max-nested-callbacks */
-import { errorLogger, messageErrorResponse, ok } from '../../../../main/utils';
+import { badRequest, errorLogger, messageErrorResponse } from '../../../../main/utils';
 import { findEmail } from '../../../helper/find-email';
+import {
+  type functionToExecProps,
+  readGoogleSheet,
+  type readGoogleSheetProps
+} from '../../../helper/read-sheet';
 import type { Controller } from '../../../../domain/protocols';
-import type { OnEndProps, OnFindEmailProps } from '../../../helper/find-email';
+import type { OnEndProps, OnFindEmailProps, dataProps } from '../../../helper/find-email';
 import type { Request, Response } from 'express';
-import type { readGoogleSheetProps } from '../../../helper/read-sheet';
 
 interface Body {
   email: string;
@@ -38,55 +39,70 @@ interface Body {
 export const stakeAccountBannedController: Controller =
   () => async (request: Request, response: Response) => {
     try {
-      const { functionalityId, googleSheets, email, password } = request.body as Body;
+      const { email, password, googleSheets } = request.body as Body;
 
-      let finalError: Error | undefined;
-      let finalEmails: string[] = [];
+      response.setHeader('Content-Type', 'text/plain');
 
-      const onError = (error: Error): void => {
-        finalError = error;
+      const list: unknown[] = [];
+      let error: dataProps | undefined;
+
+      const onError = (result: dataProps): void => {
+        error = result;
       };
 
-      const onFindEmail = ({ emails }: OnFindEmailProps): void => {
-        emails.push('Conta foi suspensa');
+      const onFindEmail = ({ result }: OnFindEmailProps): void => {
+        result.push('Conta foi suspensa');
       };
 
-      const onEnd = ({ emails }: OnEndProps): void => {
-        finalEmails = emails;
+      const onEnd = ({ data, result, hasError }: OnEndProps): void => {
+        list.push('1');
+        let len = -1;
+
+        if (typeof googleSheets !== 'undefined')
+          len = googleSheets.endRow - googleSheets.startRow + 1;
+
+        let newResult: dataProps | undefined;
+
+        if (hasError && typeof error !== 'undefined') {
+          newResult = { ...error };
+          error = undefined;
+        } else if (result.length === 0) newResult = { data, result: ['Conta ok'] };
+        else newResult = { data, result };
+
+        response.write(JSON.stringify(newResult));
+
+        if (list.length === len || len === -1) response.end();
       };
 
-      // const functionToExec = ({ email, password }: functionToExecProps): string[] => {
-      //   return findEmail({
-      //     email,
-      //     from: 'noreply@stake.com',
-      //     onEnd,
-      //     onError,
-      //     onFindEmail,
-      //     password,
-      //     subject: 'A sua conta foi suspensa'
-      //   });
-      // };
+      const functionToExec = async (data: functionToExecProps): Promise<string[]> => {
+        const res = await findEmail({
+          email: data.email,
+          from: 'noreply@stake.com',
+          onEnd,
+          onError,
+          onFindEmail,
+          password: data.password,
+          subject: 'A sua conta foi suspensa'
+        });
 
-      // if (typeof googleSheets === 'object')
-      //   await readGoogleSheet({
-      //     ...googleSheets,
-      //     functionToExec,
-      //     functionalityId
-      //   });
+        return res;
+      };
 
-      // if (finalError instanceof Error) return messageErrorResponse({ error: finalError, response });
-
-      findEmail({
-        email,
-        from: 'noreply@stake.com',
-        onEnd,
-        onError,
-        onFindEmail,
-        password,
-        subject: 'A sua conta foi suspensa'
-      });
-
-      return ok({ payload: finalEmails, response });
+      if (typeof googleSheets !== 'undefined')
+        if (googleSheets.endRow >= googleSheets.startRow)
+          await readGoogleSheet({
+            ...googleSheets,
+            functionToExec
+          });
+        else
+          badRequest({
+            message: {
+              english: 'Final de linha tem que ser maior que início',
+              portuguese: 'Final de linha tem que ser maior que início'
+            },
+            response
+          });
+      else await functionToExec({ email, password });
     } catch (error) {
       errorLogger(error);
 
