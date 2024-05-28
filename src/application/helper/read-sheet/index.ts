@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { env } from '../../../main/config/env';
 import { google } from 'googleapis';
+import credentials from './credentials.json';
 
 export interface functionToExecProps {
   email: string;
@@ -29,8 +29,6 @@ export const readGoogleSheet = async ({
   startRow
 }: readGoogleSheetProps): Promise<void> => {
   const range = `'${sheetName}'!${email}${startRow}:${password}${endRow}`;
-
-  const { credentials } = env;
 
   const auth = new google.auth.GoogleAuth({
     credentials,
