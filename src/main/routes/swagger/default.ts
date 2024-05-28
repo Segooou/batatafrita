@@ -44,3 +44,14 @@
  * @property {Messages} message
  * @property {string} status
  */
+
+/**
+ * @typedef {object} GoogleSheets
+ * @property {string} sheetId
+ * @property {string} email
+ * @property {string} password
+ * @property {string} sheetName
+ * @property {string} resultColumn
+ * @property {number} startRow
+ * @property {number} endRow
+ */
