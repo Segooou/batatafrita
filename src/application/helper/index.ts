@@ -3,3 +3,4 @@ export * from './has-user-by-id';
 export * from './find-email';
 export * from './get-google-sheets';
 export * from './read-sheet';
+export * from './convert-result';

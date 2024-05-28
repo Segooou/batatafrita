@@ -93,7 +93,7 @@ model InputProps {
 enum InputType {
   text
   email
-  tel
+  number
   url
 }
 

@@ -1,7 +1,10 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable no-negated-condition */
 /* eslint-disable no-undefined */
 /* eslint-disable consistent-return */
+import { DataSource } from '../../../../infra/database';
 import { badRequest, errorLogger, messageErrorResponse } from '../../../../main/utils';
+import { convertResult } from '../../../helper';
 import { findEmail } from '../../../helper/find-email';
 import {
   type functionToExecProps,
@@ -39,15 +42,39 @@ interface Body {
 export const stakeAccountBannedController: Controller =
   () => async (request: Request, response: Response) => {
     try {
-      const { email, password, googleSheets } = request.body as Body;
+      const { email, password, googleSheets, functionalityId } = request.body as Body;
 
       response.setHeader('Content-Type', 'text/plain');
 
-      const list: unknown[] = [];
+      const finalResults: dataProps[] = [];
+
       let error: dataProps | undefined;
 
-      const onError = (result: dataProps): void => {
-        error = result;
+      let len = -1;
+
+      if (typeof googleSheets !== 'undefined')
+        len = googleSheets.endRow - googleSheets.startRow + 1;
+
+      const finishFunction = async (): Promise<void> => {
+        if (typeof functionalityId === 'number') {
+          const data = finalResults.map((item) => ({
+            data: item.data,
+            functionalityId,
+            result: item.result,
+            userId: request.user.id
+          }));
+
+          await DataSource.action.createMany({
+            data,
+            skipDuplicates: true
+          });
+        }
+
+        response.end();
+      };
+
+      const onError = ({ data, result }: dataProps): void => {
+        error = { data, result: convertResult(result) };
       };
 
       const onFindEmail = ({ result }: OnFindEmailProps): void => {
@@ -55,12 +82,6 @@ export const stakeAccountBannedController: Controller =
       };
 
       const onEnd = ({ data, result, hasError }: OnEndProps): void => {
-        list.push('1');
-        let len = -1;
-
-        if (typeof googleSheets !== 'undefined')
-          len = googleSheets.endRow - googleSheets.startRow + 1;
-
         let newResult: dataProps | undefined;
 
         if (hasError && typeof error !== 'undefined') {
@@ -69,9 +90,11 @@ export const stakeAccountBannedController: Controller =
         } else if (result.length === 0) newResult = { data, result: ['Conta ok'] };
         else newResult = { data, result };
 
+        finalResults.push(newResult);
+
         response.write(JSON.stringify(newResult));
 
-        if (list.length === len || len === -1) response.end();
+        if (finalResults.length === len || len === -1) finishFunction();
       };
 
       const functionToExec = async (data: functionToExecProps): Promise<string[]> => {

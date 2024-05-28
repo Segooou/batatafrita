@@ -71,13 +71,12 @@ export const findEmail = async ({
   const TEXT = ['TEXT', text ?? '*'];
 
   const searchEmail = async (): Promise<void> => {
-    await new Promise<void>((resolve, reject) => {
+    await new Promise<void>((resolve) => {
       imap.search([FROM, SUBJECT, TEXT], (err, results) => {
         if (err instanceof Error) {
           console.info('1', err);
           hasError = true;
           onError({ data, result: [err?.message] });
-          reject(err);
           return;
         }
 
@@ -122,7 +121,6 @@ export const findEmail = async ({
             console.info('2', err);
             hasError = true;
             onError({ data, result: [err?.message] });
-            reject(err);
             return;
           }
 
@@ -142,7 +140,6 @@ export const findEmail = async ({
           console.info('3', err);
           hasError = true;
           onError({ data, result: [err?.message] });
-          reject(err);
           return;
         }
 
@@ -166,7 +163,7 @@ export const findEmail = async ({
       console.info('4', err);
       hasError = true;
       onError({ data, result: [err?.message] });
-      reject(err);
+      imap.end();
     });
 
     imap.once('end', () => {
