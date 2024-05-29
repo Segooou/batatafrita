@@ -1,3 +1,4 @@
+/* eslint-disable no-promise-executor-return */
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { google } from 'googleapis';
 import credentials from './credentials.json';
@@ -55,7 +56,7 @@ export const readGoogleSheet = async ({
           password: row[1]
         });
 
-        return result;
+        return result ?? ['Erro'];
       })
     );
 

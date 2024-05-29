@@ -10,6 +10,11 @@ export interface OnFindEmailProps {
   result: string[];
 }
 
+export interface errorProps {
+  error: string;
+  result: string[];
+}
+
 export interface dataProps {
   data: {
     email: string;
@@ -18,15 +23,11 @@ export interface dataProps {
   result: string[];
 }
 
-export interface OnEndProps extends dataProps {
-  hasError: boolean;
-}
-
 export interface findEmailProps {
   email: string;
   password: string;
-  onError: ({ data, result }: dataProps) => void;
-  onEnd: ({ data, result }: OnEndProps) => void;
+  onError: ({ error, result }: errorProps) => void;
+  onEnd: ({ data, result }: dataProps) => void;
   onFindEmail: ({ buffer, result }: OnFindEmailProps) => void;
   from: string;
   subject?: string;
@@ -52,8 +53,6 @@ export const findEmail = async ({
     user: email
   };
 
-  let hasError = false;
-
   const data = {
     email,
     password
@@ -74,9 +73,7 @@ export const findEmail = async ({
     await new Promise<void>((resolve) => {
       imap.search([FROM, SUBJECT, TEXT], (err, results) => {
         if (err instanceof Error) {
-          console.info('1', err);
-          hasError = true;
-          onError({ data, result: [err?.message] });
+          onError({ error: err?.message, result });
           imap.end();
         }
 
@@ -118,9 +115,7 @@ export const findEmail = async ({
       await new Promise<void>((resolve, reject) => {
         imap.openBox(nextMailbox, true, (err, box) => {
           if (err instanceof Error) {
-            console.info('2', err);
-            hasError = true;
-            onError({ data, result: [err?.message] });
+            onError({ error: err?.message, result });
             imap.end();
           }
 
@@ -137,9 +132,7 @@ export const findEmail = async ({
 
       imap.openBox(initialMailbox!, true, (err, box) => {
         if (err instanceof Error) {
-          console.info('3', err);
-          hasError = true;
-          onError({ data, result: [err?.message] });
+          onError({ error: err?.message, result });
           imap.end();
         }
 
@@ -160,14 +153,12 @@ export const findEmail = async ({
     });
 
     imap.once('error', (err: Error) => {
-      console.info('4', err);
-      hasError = true;
-      onError({ data, result: [err?.message] });
-      imap.end();
+      onError({ error: err?.message, result });
+      resolve(result);
     });
 
     imap.once('end', () => {
-      onEnd({ data, hasError, result });
+      onEnd({ data, result });
       resolve(result);
     });
 

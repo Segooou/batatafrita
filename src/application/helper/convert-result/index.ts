@@ -1,14 +1,11 @@
-export const convertResult = (result: string[]): string[] => {
-  if (result.length > 0)
-    return result.map((item) => {
-      switch (item) {
-        case 'LOGIN failed.':
-          return 'Erro ao fazer login';
+export const convertResult = (result: string): string => {
+  switch (result) {
+    case 'LOGIN failed.':
+      return 'Erro ao fazer login';
+    case 'Timed out while authenticating with server':
+      return 'Erro ao fazer login';
 
-        default:
-          return item;
-      }
-    });
-
-  return [''];
+    default:
+      return result ?? 'Error';
+  }
 };
