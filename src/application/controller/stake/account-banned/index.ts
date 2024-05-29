@@ -88,7 +88,7 @@ export const stakeAccountBannedController: Controller =
           onEnd,
           onFindEmail,
           password: data.password,
-          subject: 'A sua conta foi suspensa'
+          subject: ['A sua conta foi suspensa', 'Your account has been suspended']
         });
 
         return res;

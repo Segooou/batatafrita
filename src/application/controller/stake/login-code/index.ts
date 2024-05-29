@@ -96,7 +96,7 @@ export const stakeLoginCodeController: Controller =
           onEnd,
           onFindEmail,
           password: data.password,
-          subject: 'Entrar em Stake.com'
+          subject: ['Entrar em Stake.com', 'Login to stake.com']
         });
 
         return res;

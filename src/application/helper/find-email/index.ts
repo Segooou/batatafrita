@@ -27,8 +27,8 @@ export interface findEmailProps {
   onEnd: (data: DataProps) => void;
   onFindEmail: (data: OnFindEmailProps) => void;
   from: string;
-  subject?: string;
-  text?: string;
+  subject?: string[];
+  text?: string[];
 }
 
 export const findEmail = async ({
@@ -66,8 +66,15 @@ export const findEmail = async ({
   let errorMessage = '';
 
   const FROM = ['FROM', from];
-  const SUBJECT = ['SUBJECT', subject ?? '*'];
-  const TEXT = ['TEXT', text ?? '*'];
+  const SUBJECT =
+    typeof subject?.length !== 'undefined' && subject.length > 1
+      ? ['or', ...subject.map((item) => ['SUBJECT', item])]
+      : ['SUBJECT', subject?.[0] ?? '*'];
+
+  const TEXT =
+    typeof text?.length !== 'undefined' && text.length > 1
+      ? ['or', ...text.map((item) => ['TEXT', item])]
+      : ['TEXT', text?.[0] ?? '*'];
 
   const searchEmail = async (): Promise<void> => {
     await new Promise<void>((resolve) => {

@@ -1,22 +1,9 @@
 /* eslint-disable consistent-return */
-import { DataSource } from '../../../../infra/database';
-import { badRequest, errorLogger, messageErrorResponse, ok } from '../../../../main/utils';
-import { findEmail } from '../../../helper/find-email';
-import {
-  type functionToExecProps,
-  readGoogleSheet,
-  type readGoogleSheetProps
-} from '../../../helper/read-sheet';
+import { errorLogger, messageErrorResponse } from '../../../../main/utils';
+import { useFindEmail } from '../../../helper';
 import type { Controller } from '../../../../domain/protocols';
 import type { DataProps, OnFindEmailProps } from '../../../helper/find-email';
 import type { Request, Response } from 'express';
-
-interface Body {
-  email: string;
-  password: string;
-  functionalityId: number;
-  googleSheets?: readGoogleSheetProps;
-}
 
 /**
  * POST /stake/first-access
@@ -35,8 +22,6 @@ interface Body {
 export const stakeFirstAccessController: Controller =
   () => async (request: Request, response: Response) => {
     try {
-      const { email, password, googleSheets, functionalityId } = request.body as Body;
-
       const finalResults: DataProps[] = [];
 
       const convertResult = (result: string): string => {
@@ -47,25 +32,6 @@ export const stakeFirstAccessController: Controller =
           default:
             return result ?? 'Error';
         }
-      };
-
-      const finishFunction = async (): Promise<void> => {
-        if (typeof functionalityId === 'number') {
-          const data = finalResults.map((item) => ({
-            data: item.data,
-            functionalityId,
-            result: item.result,
-            userId: request.user.id
-          }));
-
-          await DataSource.action.createMany({
-            data,
-            skipDuplicates: true
-          });
-        }
-
-        ok({ payload: finalResults, response });
-        response.end();
       };
 
       const onFindEmail = ({ result, buffer }: OnFindEmailProps): void => {
@@ -96,38 +62,15 @@ export const stakeFirstAccessController: Controller =
         finalResults.push(newResult);
       };
 
-      const functionToExec = async (data: functionToExecProps): Promise<string[]> => {
-        const res = await findEmail({
-          email: data.email,
-          from: 'noreply@stake.com',
-          onEnd,
-          onFindEmail,
-          password: data.password,
-          subject: 'boas vindas ao Stake.com'
-        });
-
-        return res;
-      };
-
-      if (typeof googleSheets === 'undefined') {
-        await functionToExec({ email, password });
-        await finishFunction();
-      } else if (Number(googleSheets.endRow) >= Number(googleSheets.startRow)) {
-        await readGoogleSheet({
-          ...googleSheets,
-          functionToExec
-        });
-        await finishFunction();
-      } else {
-        badRequest({
-          message: {
-            english: 'Final de linha tem que ser maior que início',
-            portuguese: 'Final de linha tem que ser maior que início'
-          },
-          response
-        });
-        response.end();
-      }
+      await useFindEmail({
+        finalResults,
+        from: 'noreply@stake.com',
+        onEnd,
+        onFindEmail,
+        request,
+        response,
+        subject: ['boas vindas ao Stake.com', 'welcome to Stake.com']
+      });
     } catch (error) {
       errorLogger(error);
 
