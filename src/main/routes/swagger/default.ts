@@ -57,6 +57,14 @@
  */
 
 /**
+ * @typedef {object} EmailGoogleSheetsBody
+ * @property {string} email.required
+ * @property {string} password.required
+ * @property {number} functionalityId.required
+ * @property {GoogleSheets} googleSheets
+ */
+
+/**
  * @typedef {object} GoogleSheetsQuery
  * @property {string} email.query.required
  * @property {string} password.query.required

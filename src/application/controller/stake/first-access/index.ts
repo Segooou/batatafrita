@@ -19,14 +19,6 @@ interface Body {
 }
 
 /**
- * @typedef {object} InsertStakeAccountBannedBody
- * @property {string} email.required
- * @property {string} password.required
- * @property {number} functionalityId.required
- * @property {GoogleSheets} googleSheets
- */
-
-/**
  * POST /stake/first-access
  * @summary First Access Stake
  * @tags Stake
@@ -36,7 +28,7 @@ interface Body {
  *   "email": "JeremiahFoster479550@outlook.com",
  *   "password": "Jeremiah1178"
  * }
- * @param {InsertStakeFirstAccessBody} request.body.required
+ * @param {EmailGoogleSheetsBody} request.body.required
  * @return {DefaultResponse} 200 - Successful response - application/json
  * @return {BadRequest} 400 - Bad request response - application/json
  */
