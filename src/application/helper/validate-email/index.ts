@@ -37,7 +37,7 @@ export const validateEmail = async ({
 
   const imap = new Imap(imapConfig);
 
-  await new Promise(() => {
+  return await new Promise<string[]>((resolve) => {
     imap.once('ready', () => {
       onFindEmail({ data, errorMessage, hasError, result });
       imap.end();
@@ -51,10 +51,9 @@ export const validateEmail = async ({
 
     imap.once('end', () => {
       onEnd({ data, errorMessage, hasError, result });
+      resolve(result);
     });
 
     imap.connect();
   });
-
-  return result;
 };
