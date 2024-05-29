@@ -47,7 +47,7 @@
 
 /**
  * @typedef {object} GoogleSheets
- * @property {string} sheetId
+ * @property {string} spreadsheetId
  * @property {string} email
  * @property {string} password
  * @property {string} sheetName

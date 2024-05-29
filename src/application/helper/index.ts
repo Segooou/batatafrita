@@ -4,4 +4,4 @@ export * from './find-email';
 export * from './create-action';
 export * from './get-google-sheets';
 export * from './read-sheet';
-export * from './convert-result';
+export * from './validate-email';

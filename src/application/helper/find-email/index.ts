@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function */
 /* eslint-disable @typescript-eslint/no-loop-func */
 /* eslint-disable no-return-await */
 /* eslint-disable no-await-in-loop */
@@ -10,25 +11,21 @@ export interface OnFindEmailProps {
   result: string[];
 }
 
-export interface errorProps {
-  error: string;
-  result: string[];
-}
-
-export interface dataProps {
+export interface DataProps {
   data: {
     email: string;
     password: string;
   };
   result: string[];
+  hasError: boolean;
+  errorMessage?: string;
 }
 
 export interface findEmailProps {
   email: string;
   password: string;
-  onError: ({ error, result }: errorProps) => void;
-  onEnd: ({ data, result }: dataProps) => void;
-  onFindEmail: ({ buffer, result }: OnFindEmailProps) => void;
+  onEnd: (data: DataProps) => void;
+  onFindEmail: (data: OnFindEmailProps) => void;
   from: string;
   subject?: string;
   text?: string;
@@ -38,14 +35,14 @@ export const findEmail = async ({
   email,
   password,
   onEnd,
-  onError,
   from,
   onFindEmail,
   subject,
   text
 }: findEmailProps): Promise<string[]> => {
   const imapConfig = {
-    connTimeout: 999999999,
+    authTimeout: 60000,
+    connTimeout: 60000,
     host: 'outlook.office365.com',
     password,
     port: 993,
@@ -65,6 +62,9 @@ export const findEmail = async ({
 
   let lastMatch: number | undefined;
 
+  let hasError = false;
+  let errorMessage = '';
+
   const FROM = ['FROM', from];
   const SUBJECT = ['SUBJECT', subject ?? '*'];
   const TEXT = ['TEXT', text ?? '*'];
@@ -73,7 +73,8 @@ export const findEmail = async ({
     await new Promise<void>((resolve) => {
       imap.search([FROM, SUBJECT, TEXT], (err, results) => {
         if (err instanceof Error) {
-          onError({ error: err?.message, result });
+          hasError = true;
+          errorMessage = err?.message;
           imap.end();
         }
 
@@ -112,27 +113,36 @@ export const findEmail = async ({
 
       if (typeof nextMailbox === 'undefined') break;
 
-      await new Promise<void>((resolve, reject) => {
+      await new Promise<void>((resolve) => {
         imap.openBox(nextMailbox, true, (err, box) => {
           if (err instanceof Error) {
-            onError({ error: err?.message, result });
+            hasError = true;
+            errorMessage = err?.message;
             imap.end();
           }
 
-          if (box.messages.total > 0) searchEmail().then(resolve).catch(reject);
+          if (box.messages.total > 0)
+            searchEmail()
+              .then(resolve)
+              .catch((err2: Error) => {
+                hasError = true;
+                errorMessage = err2?.message;
+                imap.end();
+              });
           else resolve();
         });
       });
     }
   };
 
-  return await new Promise<string[]>((resolve, reject) => {
+  return await new Promise<string[]>((resolve) => {
     imap.once('ready', () => {
       const initialMailbox = mailboxesToSearch.shift();
 
       imap.openBox(initialMailbox!, true, (err, box) => {
         if (err instanceof Error) {
-          onError({ error: err?.message, result });
+          hasError = true;
+          errorMessage = err?.message;
           imap.end();
         }
 
@@ -142,23 +152,31 @@ export const findEmail = async ({
             .then(() => {
               imap.end();
             })
-            .catch(reject);
+            .catch((err2: Error) => {
+              hasError = true;
+              errorMessage = err2?.message;
+              imap.end();
+            });
         else
           searchNextMailbox()
             .then(() => {
               imap.end();
             })
-            .catch(reject);
+            .catch((err2: Error) => {
+              hasError = true;
+              errorMessage = err2?.message;
+              imap.end();
+            });
       });
     });
 
     imap.once('error', (err: Error) => {
-      onError({ error: err?.message, result });
-      resolve(result);
+      hasError = true;
+      errorMessage = err?.message;
     });
 
     imap.once('end', () => {
-      onEnd({ data, result });
+      onEnd({ data, errorMessage, hasError, result });
       resolve(result);
     });
 

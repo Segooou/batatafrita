@@ -1,14 +1,14 @@
 /* eslint-disable consistent-return */
 import { DataSource } from '../../../../infra/database';
 import { badRequest, errorLogger, messageErrorResponse, ok } from '../../../../main/utils';
-import { findEmail } from '../../../helper/find-email';
 import {
   type functionToExecProps,
   readGoogleSheet,
   type readGoogleSheetProps
 } from '../../../helper/read-sheet';
+import { validateEmail } from '../../../helper';
 import type { Controller } from '../../../../domain/protocols';
-import type { DataProps, OnFindEmailProps } from '../../../helper/find-email';
+import type { DataProps } from '../../../helper/find-email';
 import type { Request, Response } from 'express';
 
 interface Body {
@@ -19,7 +19,7 @@ interface Body {
 }
 
 /**
- * @typedef {object} InsertStakeAccountBannedBody
+ * @typedef {object} InsertGoogleSheetsCheckEmailBody
  * @property {string} email.required
  * @property {string} password.required
  * @property {number} functionalityId.required
@@ -27,15 +27,15 @@ interface Body {
  */
 
 /**
- * POST /stake/account-banned
- * @summary Account Banned Stake
- * @tags Stake
+ * POST /google-sheets/check-email
+ * @summary Check if email is valid
+ * @tags Google Sheets
  * @security BearerAuth
- * @param {InsertStakeAccountBannedBody} request.body.required
+ * @param {InsertGoogleSheetsCheckEmailBody} request.body.required
  * @return {DefaultResponse} 200 - Successful response - application/json
  * @return {BadRequest} 400 - Bad request response - application/json
  */
-export const stakeAccountBannedController: Controller =
+export const googleSheetsCheckEmailController: Controller =
   () => async (request: Request, response: Response) => {
     try {
       const { email, password, googleSheets, functionalityId } = request.body as Body;
@@ -45,7 +45,7 @@ export const stakeAccountBannedController: Controller =
       const convertResult = (result: string): string => {
         switch (result) {
           case 'LOGIN failed.':
-            return 'Erro ao fazer login';
+            return 'Bloqueado';
 
           default:
             return result ?? 'Error';
@@ -61,18 +61,19 @@ export const stakeAccountBannedController: Controller =
             userId: request.user.id
           }));
 
-          await DataSource.action.createMany({
-            data,
-            skipDuplicates: true
-          });
+          if (data.length > 0)
+            await DataSource.action.createMany({
+              data,
+              skipDuplicates: true
+            });
         }
 
         ok({ payload: finalResults, response });
         response.end();
       };
 
-      const onFindEmail = ({ result }: OnFindEmailProps): void => {
-        result.push('Conta foi suspensa');
+      const onFindEmail = ({ result }: DataProps): void => {
+        result.push('Live');
       };
 
       const onEnd = (data: DataProps): void => {
@@ -81,22 +82,17 @@ export const stakeAccountBannedController: Controller =
         if (data.hasError && typeof data.errorMessage === 'string') {
           newResult = { ...data, result: [convertResult(data.errorMessage)] };
           data.result.push(convertResult(data.errorMessage));
-        } else if (data.result.length === 0) {
-          newResult = { ...data, result: ['Conta ok'] };
-          data.result.push('Conta ok');
         } else newResult = data;
 
         finalResults.push(newResult);
       };
 
       const functionToExec = async (data: functionToExecProps): Promise<string[]> => {
-        const res = await findEmail({
+        const res = await validateEmail({
           email: data.email,
-          from: 'noreply@stake.com',
           onEnd,
           onFindEmail,
-          password: data.password,
-          subject: 'A sua conta foi suspensa'
+          password: data.password
         });
 
         return res;
