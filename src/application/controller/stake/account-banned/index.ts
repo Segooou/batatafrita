@@ -1,12 +1,9 @@
+/* eslint-disable consistent-return */
+/* eslint-disable no-undefined */
 /* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable no-negated-condition */
-/* eslint-disable no-undefined */
-/* eslint-disable consistent-return */
-
-'use client';
-
 import { DataSource } from '../../../../infra/database';
-import { badRequest, errorLogger, messageErrorResponse } from '../../../../main/utils';
+import { badRequest, errorLogger, messageErrorResponse, ok } from '../../../../main/utils';
 import { convertResult } from '../../../helper';
 import { findEmail } from '../../../helper/find-email';
 import {
@@ -47,8 +44,6 @@ export const stakeAccountBannedController: Controller =
     try {
       const { email, password, googleSheets, functionalityId } = request.body as Body;
 
-      response.setHeader('Content-Type', 'text/plain');
-
       const finalResults: dataProps[] = [];
 
       let error: dataProps | undefined;
@@ -73,6 +68,7 @@ export const stakeAccountBannedController: Controller =
           });
         }
 
+        ok({ payload: finalResults, response });
         response.end();
       };
 
@@ -94,8 +90,6 @@ export const stakeAccountBannedController: Controller =
         else newResult = { data, result };
 
         finalResults.push(newResult);
-
-        response.write(JSON.stringify(newResult));
 
         if (finalResults.length === len || len === -1) finishFunction();
       };
