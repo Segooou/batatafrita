@@ -2,6 +2,9 @@
 /* eslint-disable no-negated-condition */
 /* eslint-disable no-undefined */
 /* eslint-disable consistent-return */
+
+'use client';
+
 import { DataSource } from '../../../../infra/database';
 import { badRequest, errorLogger, messageErrorResponse } from '../../../../main/utils';
 import { convertResult } from '../../../helper';
