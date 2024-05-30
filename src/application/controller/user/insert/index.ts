@@ -19,12 +19,14 @@ import type { Request, Response } from 'express';
 interface Body {
   username: string;
   password: string;
+  avatar?: string;
 }
 
 /**
  * @typedef {object} InsertUserBody
  * @property {string} username.required
  * @property {string} password.required
+ * @property {string} avatar
  */
 
 /**
@@ -52,7 +54,7 @@ export const insertUserController: Controller =
     try {
       await insertUserSchema.validate(request, { abortEarly: false });
 
-      const { username, password } = request.body as Body;
+      const { username, password, avatar } = request.body as Body;
 
       if (await hasUserByUsername(username))
         return badRequest({ message: messages.default.userAlreadyExists, response });
@@ -62,7 +64,7 @@ export const insertUserController: Controller =
       const hashedPassword = await hash(password, HASH_SALT);
 
       const payload = await DataSource.user.create({
-        data: { password: hashedPassword, username },
+        data: { avatar, password: hashedPassword, username },
         select: userFindParams
       });
 

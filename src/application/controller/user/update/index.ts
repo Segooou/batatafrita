@@ -3,9 +3,9 @@
 import { ValidationError } from 'yup';
 
 import { DataSource } from '../../../../infra/database';
+import { Role } from '@prisma/client';
 import {
   badRequest,
-  deleteFiles,
   errorLogger,
   forbidden,
   messageErrorResponse,
@@ -25,14 +25,14 @@ import type { Request, Response } from 'express';
 interface Body {
   password?: string;
   username?: string;
-  image?: string;
+  avatar?: string;
 }
 
 /**
  * @typedef {object} UpdateUserBody
  * @property {string} username
  * @property {string} password
- * @property {string} image - avatar - binary
+ * @property {string} avatar
  */
 
 /**
@@ -59,15 +59,15 @@ export const updateUserController: Controller =
     try {
       await updateUserSchema.validate(request, { abortEarly: false });
 
-      if (request.user.id !== Number(request.params.id))
+      if (request.user.id !== Number(request.params.id) && request.user.role !== Role.admin)
         return forbidden({
           message: { english: 'update this user', portuguese: 'atualizar este usuário' },
           response
         });
 
-      const { username, password, image } = request.body as Body;
+      const { username, password, avatar } = request.body as Body;
 
-      if (await hasUserByUsername(username))
+      if (await hasUserByUsername(username, Number(request.params.id)))
         return badRequest({ message: messages.default.userAlreadyExists, response });
 
       let newPassword: string | undefined;
@@ -80,32 +80,11 @@ export const updateUserController: Controller =
         newPassword = hashedPassword;
       }
 
-      let avatar: string | undefined;
-
-      if (typeof request.file?.filename === 'string') avatar = image;
-
-      if (typeof avatar !== 'undefined') {
-        const getUser = await DataSource.user.findUnique({
-          select: {
-            avatar: true
-          },
-          where: {
-            id: Number(request.params.id)
-          }
-        });
-
-        try {
-          if (typeof getUser?.avatar === 'string') deleteFiles([getUser.avatar]);
-        } catch {
-          /* */
-        }
-      }
-
       const payload = await DataSource.user.update({
         data: {
           avatar,
           password: newPassword,
-          username: typeof username === 'string' && username.length > 0 ? username : undefined
+          username
         },
         select: userFindParams,
         where: whereById(request.params.id)

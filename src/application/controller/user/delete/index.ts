@@ -1,4 +1,5 @@
 import { DataSource } from '../../../../infra/database';
+import { Role } from '@prisma/client';
 import { errorLogger, forbidden, messageErrorResponse, ok } from '../../../../main/utils';
 import { userFindParams } from '../../../../data/search';
 import type { Controller } from '../../../../domain/protocols';
@@ -24,7 +25,7 @@ import type { Request, Response } from 'express';
 export const deleteUserController: Controller =
   () => async (request: Request, response: Response) => {
     try {
-      if (request.user.id !== Number(request.params.id))
+      if (request.user.id !== Number(request.params.id) && request.user.role !== Role.admin)
         return forbidden({
           message: { english: 'delete this user', portuguese: 'deletar este usuário' },
           response
@@ -34,18 +35,12 @@ export const deleteUserController: Controller =
         data: {
           actions: {
             updateMany: {
-              data: {
-                finishedAt: new Date()
-              },
-              where: {
-                userId: Number(request.params.id)
-              }
+              data: { finishedAt: new Date() },
+              where: { userId: Number(request.params.id) }
             }
           },
           favoriteUserFunctionality: {
-            deleteMany: {
-              userId: Number(request.params.id)
-            }
+            deleteMany: { userId: Number(request.params.id) }
           },
           finishedAt: new Date()
         },

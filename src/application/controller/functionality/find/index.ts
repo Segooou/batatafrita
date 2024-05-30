@@ -59,7 +59,7 @@ export const findFunctionalityController: Controller =
       const search = await DataSource.functionality.findMany({
         orderBy,
         select: {
-          ...functionalityFindParams(false),
+          ...functionalityFindParams(true),
           favoriteUserFunctionality: {
             select: {
               id: true

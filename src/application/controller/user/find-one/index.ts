@@ -26,7 +26,7 @@ export const findOneUserController: Controller =
   () => async (request: Request, response: Response) => {
     try {
       const payload = await DataSource.user.findUnique({
-        select: userFindParams,
+        select: { ...userFindParams, _count: { select: { actions: true } } },
         where: { id: Number(request.params.id) }
       });
 

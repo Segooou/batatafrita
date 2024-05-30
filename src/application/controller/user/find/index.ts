@@ -56,7 +56,7 @@ export const findUserController: Controller =
 
       const search = await DataSource.user.findMany({
         orderBy,
-        select: userFindParams,
+        select: { ...userFindParams, _count: { select: { actions: true } } },
         skip,
         take,
         where
