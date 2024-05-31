@@ -10,7 +10,6 @@ import {
   whereById
 } from '../../../../main/utils';
 import { functionalityFindParams } from '../../../../data/search';
-import { updateFunctionalitySchema } from '../../../../data/validation';
 import type { Controller } from '../../../../domain/protocols';
 import type { InputProps } from '@prisma/client';
 import type { Request, Response } from 'express';
@@ -21,6 +20,15 @@ interface Body {
   platformId?: number;
   googleSheets?: number;
   inputProps?: InputProps[];
+  messageNotFound?: string;
+  from?: string;
+  regex?: string;
+  messageOnFind?: string;
+  subject?: string[];
+  text?: string[];
+  indexToGet?: number[];
+  textToReplace?: string[][];
+  active?: boolean;
 }
 
 /**
@@ -65,26 +73,51 @@ interface Body {
 export const updateFunctionalityController: Controller =
   () => async (request: Request, response: Response) => {
     try {
-      await updateFunctionalitySchema.validate(request, { abortEarly: false });
-
-      const { apiRoute, description, googleSheets, inputProps, platformId } = request.body as Body;
+      const {
+        apiRoute,
+        description,
+        googleSheets,
+        inputProps,
+        active,
+        from,
+        indexToGet,
+        messageNotFound,
+        messageOnFind,
+        regex,
+        subject,
+        text,
+        textToReplace,
+        platformId
+      } = request.body as Body;
 
       if (typeof inputProps !== 'undefined' && inputProps?.length > 0)
         await DataSource.inputProps.deleteMany({
           where: { functionalityId: Number(request.params.id) }
         });
 
+      const newApiRoute =
+        typeof apiRoute === 'string' && apiRoute.length > 0 ? apiRoute : '/functionality/execute';
+
       const payload = await DataSource.functionality.update({
         data: {
-          apiRoute,
+          active,
+          apiRoute: newApiRoute,
           description,
+          from,
           googleSheets,
+          indexToGet,
           inputProps: {
             createMany: {
               data: inputProps ?? []
             }
           },
-          platformId
+          messageNotFound,
+          messageOnFind,
+          platformId,
+          regex,
+          subject,
+          text,
+          textToReplace
         },
         select: functionalityFindParams(true),
         where: whereById(request.params.id)

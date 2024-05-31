@@ -26,10 +26,10 @@ export const deleteFunctionalityController: Controller =
     try {
       const payload = await DataSource.functionality.update({
         data: {
-          finishedAt: Date(),
+          finishedAt: new Date(),
           inputProps: {
             updateMany: {
-              data: { finishedAt: Date() },
+              data: { finishedAt: new Date() },
               where: { functionalityId: Number(request.params.id) }
             }
           }

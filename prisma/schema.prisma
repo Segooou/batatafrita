@@ -53,7 +53,18 @@ model Functionality {
   keyword      String  @unique
   description  String?
   googleSheets Int?
-  apiRoute     String
+  apiRoute     String?
+
+  messageNotFound String?
+  from            String?
+  regex           String?
+  messageOnFind   String?
+  subject         String[]
+  text            String[]
+  indexToGet      Int[]
+  textToReplace   Json[]
+
+  active Boolean @default(false)
 
   platform                  Platform                    @relation(fields: [platformId], references: [id])
   inputProps                InputProps[]

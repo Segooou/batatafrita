@@ -22,6 +22,7 @@ interface Body {
   email: string;
   password: string;
   functionalityId: number;
+  test?: boolean;
   googleSheets?: readGoogleSheetProps;
 }
 
@@ -35,10 +36,10 @@ export const useFindEmail = async ({
   onEnd,
   onFindEmail
 }: useFindEmailProps): Promise<void> => {
-  const { email, password, googleSheets, functionalityId } = request.body as unknown as Body;
+  const { email, password, googleSheets, functionalityId, test } = request.body as unknown as Body;
 
   const finishFunction = async (): Promise<void> => {
-    if (typeof functionalityId === 'number') {
+    if (typeof functionalityId === 'number' && test !== true) {
       const data = finalResults.map((item) => ({
         data: item.data,
         functionalityId,

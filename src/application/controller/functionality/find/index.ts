@@ -56,10 +56,19 @@ export const findFunctionalityController: Controller =
         query
       });
 
+      const findWhere = { ...where };
+
+      if (user.role !== 'admin') Object.assign(findWhere, { active: { equals: true } });
+
       const search = await DataSource.functionality.findMany({
         orderBy,
         select: {
           ...functionalityFindParams(true),
+          _count: {
+            select: {
+              actions: true
+            }
+          },
           favoriteUserFunctionality: {
             select: {
               id: true
@@ -71,7 +80,7 @@ export const findFunctionalityController: Controller =
         },
         skip,
         take,
-        where
+        where: findWhere
       });
 
       const totalElements = await DataSource.functionality.count({

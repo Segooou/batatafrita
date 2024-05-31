@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import {
   deleteFunctionalityController,
+  executeFunctionalityController,
   findFunctionalityController,
   findOneFunctionalityByKeywordController,
   findOneFunctionalityController,
@@ -12,6 +13,7 @@ export const FunctionalityRoutes = (inputRouter: Router): void => {
   const router = Router();
 
   router.post('/', insertFunctionalityController());
+  router.post('/execute', executeFunctionalityController());
   router.get('/', findFunctionalityController());
   router.get('/:id', findOneFunctionalityController());
   router.get('/keyword/:id', findOneFunctionalityByKeywordController());

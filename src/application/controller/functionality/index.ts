@@ -4,3 +4,4 @@ export * from './find-one-keyword';
 export * from './delete';
 export * from './update';
 export * from './find';
+export * from './execute';

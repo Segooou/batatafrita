@@ -10,18 +10,25 @@ import {
   validationErrorResponse
 } from '../../../../main/utils';
 import { functionalityFindParams } from '../../../../data/search';
-import { insertFunctionalitySchema } from '../../../../data/validation';
+import type { $Enums, InputProps } from '@prisma/client';
 import type { Controller } from '../../../../domain/protocols';
-import type { InputProps } from '@prisma/client';
 import type { Request, Response } from 'express';
 
 interface Body {
   name: string;
-  apiRoute: string;
+  apiRoute?: string;
   description?: string;
   platformId: number;
-  googleSheets?: number;
-  inputProps: InputProps[];
+  inputProps?: InputProps[];
+  messageNotFound?: string;
+  from?: string;
+  regex?: string;
+  messageOnFind?: string;
+  subject?: string[];
+  text?: string[];
+  indexToGet?: number[];
+  textToReplace?: string[][];
+  active?: boolean;
 }
 
 /**
@@ -64,10 +71,22 @@ interface Body {
 export const insertFunctionalityController: Controller =
   () => async (request: Request, response: Response) => {
     try {
-      await insertFunctionalitySchema.validate(request, { abortEarly: false });
-
-      const { apiRoute, inputProps, name, platformId, googleSheets, description } =
-        request.body as Body;
+      const {
+        apiRoute,
+        inputProps,
+        name,
+        active,
+        from,
+        indexToGet,
+        messageNotFound,
+        messageOnFind,
+        regex,
+        subject,
+        text,
+        textToReplace,
+        platformId,
+        description
+      } = request.body as Body;
 
       const platform = await DataSource.platform.findUnique({
         select: {
@@ -87,19 +106,56 @@ export const insertFunctionalityController: Controller =
           response
         });
 
+      const inputPropsValues: Array<{
+        formValue: string;
+        isRequired: boolean;
+        label: string;
+        placeholder: string;
+        type: $Enums.InputType;
+      }> = [];
+
+      if (typeof inputProps === 'undefined' || inputProps?.length === 0) {
+        inputPropsValues.push({
+          formValue: 'email',
+          isRequired: true,
+          label: 'E-mail',
+          placeholder: 'Digite o e-mail',
+          type: 'email'
+        });
+        inputPropsValues.push({
+          formValue: 'password',
+          isRequired: true,
+          label: 'Senha',
+          placeholder: 'Digite a senha',
+          type: 'text'
+        });
+      } else inputProps.forEach((item) => inputPropsValues.push(item));
+
+      const newApiRoute =
+        typeof apiRoute === 'string' && apiRoute.length > 0 ? apiRoute : '/functionality/execute';
+
       const payload = await DataSource.functionality.create({
         data: {
-          apiRoute,
+          active,
+          apiRoute: newApiRoute,
           description,
-          googleSheets,
+          from,
+          googleSheets: 1,
+          indexToGet,
           inputProps: {
             createMany: {
-              data: inputProps
+              data: inputPropsValues
             }
           },
           keyword: `${normalizeText(name)}-${platform.keyword}`,
+          messageNotFound,
+          messageOnFind,
           name,
-          platformId
+          platformId,
+          regex,
+          subject,
+          text,
+          textToReplace
         },
         select: functionalityFindParams(true)
       });
