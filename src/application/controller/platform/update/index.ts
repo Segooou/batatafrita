@@ -62,9 +62,7 @@ export const updatePlatformController: Controller =
         keyword = normalizeText(body.name);
       }
 
-      let image: string | undefined;
-
-      if (typeof request.file?.filename === 'string') image = body.image;
+      const { image } = body;
 
       let description: string | undefined;
 
