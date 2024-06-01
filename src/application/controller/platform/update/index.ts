@@ -64,12 +64,8 @@ export const updatePlatformController: Controller =
 
       const { image } = body;
 
-      let description: string | undefined;
-
-      if (typeof request.file?.filename === 'string') description = body.description;
-
       const payload = await DataSource.platform.update({
-        data: { description, image, keyword, name },
+        data: { image, keyword, name },
         select: platformFindParams,
         where: whereById(request.params.id)
       });
