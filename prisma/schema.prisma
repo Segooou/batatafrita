@@ -115,6 +115,7 @@ model FavoriteUserFunctionality {
   userId          Int
   functionality   Functionality @relation(fields: [functionalityId], references: [id])
   functionalityId Int
+  createdAt       DateTime      @default(now()) @db.Timestamptz()
 
   @@map("favorite_user_functionality")
 }

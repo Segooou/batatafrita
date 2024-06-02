@@ -41,26 +41,25 @@ export const findFavoriteUserFunctionalityController: Controller =
     try {
       const { skip, take } = getPagination({ query });
 
-      const search = await DataSource.functionality.findMany({
-        select: functionalityFindParams(false),
+      const search = await DataSource.favoriteUserFunctionality.findMany({
+        orderBy: {
+          createdAt: 'desc'
+        },
+        select: {
+          functionality: {
+            select: functionalityFindParams(false)
+          }
+        },
         skip,
         take,
         where: {
-          favoriteUserFunctionality: {
-            some: {
-              userId: typeof query.userId === 'string' ? Number(query.userId) : user.id
-            }
-          }
+          userId: typeof query.userId === 'string' ? Number(query.userId) : user.id
         }
       });
 
-      const totalElements = await DataSource.functionality.count({
+      const totalElements = await DataSource.favoriteUserFunctionality.count({
         where: {
-          favoriteUserFunctionality: {
-            some: {
-              userId: typeof query.userId === 'string' ? Number(query.userId) : user.id
-            }
-          }
+          userId: typeof query.userId === 'string' ? Number(query.userId) : user.id
         }
       });
 
