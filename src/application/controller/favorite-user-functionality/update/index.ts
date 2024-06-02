@@ -46,13 +46,13 @@ export const updateFavoriteUserFunctionalityController: Controller =
 
       const { isFavorite, functionalityId } = request.body as Body;
 
+      await DataSource.favoriteUserFunctionality.deleteMany({
+        where: { functionalityId, userId: Number(request.user.id) }
+      });
+
       if (isFavorite)
         await DataSource.favoriteUserFunctionality.createMany({
           data: { functionalityId, userId: Number(request.user.id) }
-        });
-      else
-        await DataSource.favoriteUserFunctionality.deleteMany({
-          where: { functionalityId, userId: Number(request.user.id) }
         });
 
       return ok({ response });
