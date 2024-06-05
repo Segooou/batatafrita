@@ -6,3 +6,5 @@ export * from './get-google-sheets';
 export * from './read-sheet';
 export * from './use-find-email';
 export * from './validate-email';
+export * from './get-image-drive';
+export * from './image';

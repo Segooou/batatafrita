@@ -1,5 +1,3 @@
-/* eslint-disable no-promise-executor-return */
-/* eslint-disable @typescript-eslint/no-misused-promises */
 import { google } from 'googleapis';
 import credentials from '../credentials/index.json';
 
