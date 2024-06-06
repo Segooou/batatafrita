@@ -1,9 +1,7 @@
 {
-  "name": "node-discord-auth",
+  "name": "batata-frita",
   "version": "1.0.0",
-  "main": "main/server.js",
-  "repository": "https://github.com/Joao-Meyer/node-discord-auth.git",
-  "author": "joao.meyer <joaoparizotimeyer@gmail.com>",
+  "main": "main/server.js", 
   "license": "MIT",
   "scripts": {
     "build": "tsc",
