@@ -1,13 +1,14 @@
-FROM node:18-alpine
+FROM node:18-slim
 
-RUN apk add --no-cache \
-    build-base \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    build-essential \
     python \
     make \
     g++ \
-    cairo-dev \
-    pango-dev \
-    jpeg-dev
+    libcairo2-dev \
+    libpango1.0-dev \
+    libjpeg-dev
 
 WORKDIR /app
 
