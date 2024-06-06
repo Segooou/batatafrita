@@ -4,6 +4,7 @@ import {
   FavoriteUserFunctionalityRoutes,
   FunctionalityRoutes,
   GoogleSheetsRoutes,
+  ImageRoutes,
   NewFunctionalityRoutes,
   PlatformRoutes,
   StakeRoutes,
@@ -33,6 +34,7 @@ export const setupRoutes = (app: Express): void => {
   StakeRoutes(privateRouter);
   BetanoRoutes(privateRouter);
   GoogleSheetsRoutes(privateRouter);
+  ImageRoutes(privateRouter);
 
   app.use(publicRouter);
 

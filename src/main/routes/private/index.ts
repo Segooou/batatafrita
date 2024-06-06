@@ -7,3 +7,4 @@ export * from './functionality.routes';
 export * from './stake.routes';
 export * from './betano.routes';
 export * from './google-sheets.routes';
+export * from './image.routes';

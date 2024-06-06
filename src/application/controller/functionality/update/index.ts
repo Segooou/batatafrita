@@ -10,8 +10,8 @@ import {
   whereById
 } from '../../../../main/utils';
 import { functionalityFindParams } from '../../../../data/search';
+import type { $Enums, InputProps } from '@prisma/client';
 import type { Controller } from '../../../../domain/protocols';
-import type { InputProps } from '@prisma/client';
 import type { Request, Response } from 'express';
 
 interface Body {
@@ -90,10 +90,23 @@ export const updateFunctionalityController: Controller =
         platformId
       } = request.body as Body;
 
-      if (typeof inputProps !== 'undefined' && inputProps?.length > 0)
+      interface props {
+        formValue: string;
+        isRequired: boolean;
+        label: string;
+        placeholder: string;
+        type: $Enums.InputType;
+      }
+      const inputPropsValues: props[] = [];
+
+      if (typeof inputProps !== 'undefined' && inputProps?.length > 0) {
         await DataSource.inputProps.deleteMany({
           where: { functionalityId: Number(request.params.id) }
         });
+        inputProps.forEach((item) => {
+          inputPropsValues.push(item as unknown as props);
+        });
+      }
 
       const newApiRoute =
         typeof apiRoute === 'string' && apiRoute.length > 0 ? apiRoute : '/functionality/execute';
@@ -108,7 +121,7 @@ export const updateFunctionalityController: Controller =
           indexToGet,
           inputProps: {
             createMany: {
-              data: inputProps ?? []
+              data: inputPropsValues
             }
           },
           messageNotFound,

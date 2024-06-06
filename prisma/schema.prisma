@@ -90,6 +90,7 @@ model InputProps {
   type        InputType
   mask        String?
   maskLength  Int?
+  options     Json[]
 
   functionality   Functionality @relation(fields: [functionalityId], references: [id])
   functionalityId Int

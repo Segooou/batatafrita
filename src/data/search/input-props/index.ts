@@ -10,6 +10,7 @@ export const inputPropsFindParams: Prisma.InputPropsSelect = {
   label: true,
   mask: true,
   maskLength: true,
+  options: true,
   placeholder: true,
   type: true,
   updatedAt: true

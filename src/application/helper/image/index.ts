@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-redundant-type-constituents */
 /* eslint-disable no-undefined */
 import { createCanvas } from 'canvas';
 import sharp from 'sharp';
@@ -44,7 +45,8 @@ interface insertTextProps {
     top: number;
     left: number;
     size?: number;
-    font?: string;
+    font?: number | string;
+    rotate?: number;
     color?: string;
   }>;
   width: number;
@@ -56,9 +58,20 @@ export const insertTexts = ({ texts, height, width }: insertTextProps): Buffer =
   const ctx = canvas.getContext('2d');
 
   texts.forEach((item) => {
+    ctx.save();
     ctx.fillStyle = item.color ?? 'black';
-    ctx.font = `${item.size ?? 50}px ${item.font ?? 'Arial'}`;
-    ctx.fillText(item.text, item.left, item.top);
+    ctx.font = `${item.size ?? 12}px ${item.font ?? 'Arial'}`;
+
+    const rotate = item.rotate ?? 1;
+    // Calcula o ângulo de inclinação em radianos (por exemplo, 10 graus)
+    const angle = Number(rotate * Math.PI) / 180;
+
+    // Aplica a transformação de rotação
+    ctx.translate(item.left, item.top + 10);
+    ctx.rotate(angle);
+    ctx.fillText(item.text, 0, 0);
+
+    ctx.restore();
   });
 
   const textBuffer = canvas.toBuffer();

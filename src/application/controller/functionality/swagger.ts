@@ -13,6 +13,12 @@
  */
 
 /**
+ * @typedef {object} Options
+ * @property {string} id
+ * @property {string} name
+ */
+
+/**
  * @typedef {object} InputProps
  * @property {number} id
  * @property {string} label
@@ -21,6 +27,7 @@
  * @property {boolean} error
  * @property {string} type
  * @property {string} formValue
+ * @property {array<Options>} options
  * @property {string|null} mask
  * @property {number|null} maskLength
  * @property {string|null} finishedAt
