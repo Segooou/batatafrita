@@ -65,8 +65,9 @@ export const cnhImageController: Controller =
           },
           response
         });
- 
-
+        
+      // 10uIy353Mu0CcJuxXNPz_J3IGsalKRGOR
+        
       const firstLicenseDate = getDateAddYears({ addYears: 19, date: convertToDate(dateOfBirth) });
       const issueDate = getDateBetween({
         biggerThen: convertToDate(getDateSubtractYears({ date: new Date(), subtractYears: 3 })),
@@ -106,8 +107,6 @@ export const cnhImageController: Controller =
         isSharp: true,
         width: 1500
       })) as Sharp[];
-
-   
 
       const frontDocumentUrl = generateAzurePathJpeg();
 
