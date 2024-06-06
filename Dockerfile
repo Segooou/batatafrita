@@ -1,12 +1,25 @@
 FROM node:18.15.0-alpine3.16
 
+RUN apk --no-cache add \
+    build-base \
+    libcairo \
+    libcairo-dev \
+    libpng \
+    libpng-dev \
+    libjpeg-turbo \
+    libjpeg-turbo-dev \
+    pango \
+    pango-dev \
+    giflib \
+    giflib-dev \
+    librsvg \
+    librsvg-dev
+
 WORKDIR /app
 
 COPY package.json ./
 COPY tsconfig.json ./
 COPY ./prisma ./prisma
-
-ENV CANVAS_SKIP_PREBUILT=1
 
 RUN npm install
 
