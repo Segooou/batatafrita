@@ -1,6 +1,7 @@
 FROM node:18.15.0-alpine3.16
 
 RUN apk --no-cache add \
+    sudo \
     build-base \
     libcairo \
     libcairo-dev \
