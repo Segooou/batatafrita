@@ -8,8 +8,6 @@ RUN apk add --update --no-cache \
     giflib-dev \
     pango-dev
 
-RUN npm_config_build_from_source=true npm i canvas --build-from-source
-
 WORKDIR /app
 
 COPY package.json ./
