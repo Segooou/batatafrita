@@ -12,6 +12,7 @@ model User {
   username String
   password String
   avatar   String?
+  token    String?
   role     Role    @default(common)
 
   actions                   Action[]

@@ -4,4 +4,5 @@ export interface tokenInput {
   id: number;
   username: string;
   role: Role;
+  token: string;
 }

@@ -25,6 +25,7 @@ export const validateTokenMiddleware: Controller =
       if (
         typeof user.id === 'undefined' ||
         typeof user.username === 'undefined' ||
+        typeof user.token === 'undefined' ||
         typeof user.role === 'undefined'
       )
         return unauthorized({ response });

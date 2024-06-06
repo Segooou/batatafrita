@@ -12,3 +12,6 @@ export * from './pdf-to-text';
 export * from './text-to-txt';
 export * from './where-by-id';
 export * from './normalize-text';
+export * from './get-one-locale';
+export * from './get-date';
+export * from './generate-hash-token';

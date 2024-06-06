@@ -4,6 +4,7 @@ import { authenticateSchema } from '../../../data/validation';
 import {
   badRequest,
   errorLogger,
+  generateHashToken,
   generateToken,
   messageErrorResponse,
   ok,
@@ -70,9 +71,18 @@ export const authenticateUserController: Controller =
 
       if (!passwordIsCorrect) return badRequest({ message: messages.auth.notFound, response });
 
+      const token = generateHashToken();
+
+      await DataSource.user.update({
+        data: { token },
+        select: { id: true },
+        where: { id: user.id }
+      });
+
       const { accessToken } = generateToken({
         id: user.id,
         role: user.role,
+        token,
         username: user.username
       });
 

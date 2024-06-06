@@ -3,8 +3,19 @@
 /* eslint-disable id-length */
 /* eslint-disable consistent-return */
 import { DataSource } from '../../../../infra/database';
-import { badRequest, errorLogger, messageErrorResponse, ok } from '../../../../main/utils';
-import { findImageAndResize, getImageDrive, insertTexts } from '../../../helper';
+import {
+  badRequest,
+  convertToDate,
+  errorLogger,
+  getDateAddYears,
+  getDateBetween,
+  getDateSubtractYears,
+  getOneLocale,
+  isValidDate,
+  messageErrorResponse,
+  ok
+} from '../../../../main/utils';
+import { findImageAndResize, generateFrontImage, getImageDrive } from '../../../helper';
 import { generateAzurePathJpeg, uploadFileToAzure } from '../../../../infra/azure-blob';
 import { random } from '../../../../main/utils/random';
 import type { Controller } from '../../../../domain/protocols';
@@ -14,12 +25,13 @@ import type { Sharp } from 'sharp';
 
 export interface Body {
   name: string;
-  gender: 'homem' | 'mulher';
+  gender: string;
   dateOfBirth: string;
   cpf: string;
   motherName: string;
 
   functionalityId: number;
+  test?: boolean;
 }
 
 /**
@@ -30,15 +42,10 @@ export interface Body {
  * @example request - payload example
  * {
  *   "name": "Japones batata frita",
- *   "firstLicenseDate": "20/07/1998",
- *   "gender": "male",
+ *   "gender": "homem",
  *   "dateOfBirth": "10/05/1970",
- *   "localOfBirth": "são paulo/sp",
- *   "issueDate": "25/02/2005",
- *   "expirationDate": "24/08/2032",
- *   "identity": "461245138",
- *   "cpf": "12545645265",
- *   "registerNumber": "156154234"
+ *   "cpf": "125.456.452-65",
+ *   "motherName": "Maria"
  * }
  * @param {EmailGoogleSheetsBody} request.body.required
  * @return {DefaultResponse} 200 - Successful response - application/json
@@ -47,25 +54,43 @@ export interface Body {
 export const cnhImageController: Controller =
   () => async (request: Request, response: Response) => {
     try {
-      const { cpf, dateOfBirth, gender, name } = request.body as Body;
+      const { cpf, dateOfBirth, gender, name, motherName, functionalityId, test } =
+        request.body as Body;
 
-      const driveId = await getImageDrive({
-        folder: gender
+      if (!isValidDate(dateOfBirth))
+        return badRequest({
+          message: {
+            english: 'Invalid date of birth',
+            portuguese: 'Data de aniversário inválida'
+          },
+          response
+        });
+
+      const firstLicenseDate = getDateAddYears({ addYears: 19, date: convertToDate(dateOfBirth) });
+      const issueDate = getDateBetween({
+        biggerThen: convertToDate(getDateSubtractYears({ date: new Date(), subtractYears: 3 })),
+        lessThan: new Date()
       });
+      const expirationDate = getDateAddYears({ addYears: 10, date: convertToDate(issueDate) });
+      const localOfBirth = getOneLocale();
+      const rg = random().slice(0, 9);
+      const registerNumber = random().slice(0, 10);
+      const genericNumber = random().slice(0, 10);
 
-      const mainId = await getImageDrive({
-        folder: 'main'
+      const faceId = await getImageDrive({
+        folder:
+          gender?.toLowerCase() === 'female' ||
+          gender?.toLowerCase() === 'mulher' ||
+          gender?.toLowerCase() === 'm'
+            ? 'mulher'
+            : 'homem'
       });
 
       const backgroundDriveId = await getImageDrive({
         folder: 'background'
       });
 
-      if (
-        typeof driveId === 'boolean' ||
-        typeof mainId === 'boolean' ||
-        typeof backgroundDriveId === 'boolean'
-      )
+      if (typeof faceId === 'boolean' || typeof backgroundDriveId === 'boolean')
         return badRequest({
           message: {
             english: 'Error on find file on drive',
@@ -74,120 +99,64 @@ export const cnhImageController: Controller =
           response
         });
 
-      const backgroundSharp = (await findImageAndResize({
+      const [frontBackgroundSharp] = (await findImageAndResize({
         height: 1500,
         imageDriveId: backgroundDriveId,
         isSharp: true,
         width: 1500
-      })) as Sharp;
+      })) as Sharp[];
 
-      const mainSharp = (await findImageAndResize({
-        height: 430,
-        imageDriveId: mainId,
-        isSharp: true,
-        width: 580
-      })) as Sharp;
+      const frontDocumentUrl = generateAzurePathJpeg();
 
-      const personBuffer = (await findImageAndResize({
-        height: 185,
-        imageDriveId: driveId,
-        width: 128
-      })) as Buffer;
-
-      const maleText = insertTexts({
-        height: 430,
-        texts: [
-          {
-            left: 138,
-            text: String(name).toLocaleUpperCase(),
-            top: 131
-          },
-          {
-            left: 495,
-            text: String('firstLicenseDate').toLocaleUpperCase(),
-            top: 139
-          },
-          {
-            left: 300,
-            text: String(dateOfBirth).toLocaleUpperCase(),
-            top: 167
-          },
-          {
-            left: 390,
-            text: String('localOfBirth').toLocaleUpperCase(),
-            top: 169
-          },
-          {
-            left: 290,
-            text: String('issueDate').toLocaleUpperCase(),
-            top: 197
-          },
-          {
-            left: 395,
-            text: String('expirationDate').toLocaleUpperCase(),
-            top: 201
-          },
-          {
-            font: 13,
-            left: 285,
-            text: String(random().slice(0, 9)).toLocaleUpperCase(),
-            top: 232
-          },
-          {
-            left: 285,
-            text: String(cpf).toLocaleUpperCase(),
-            top: 262
-          },
-          {
-            left: 410,
-            text: String(random().slice(0, 10)).toLocaleUpperCase(),
-            top: 265
-          },
-          {
-            left: 410,
-            text: String(random().slice(0, 10)).toLocaleUpperCase(),
-            top: 265
-          },
-          {
-            font: 'times new roman',
-            left: 90,
-            rotate: 270,
-            size: 30,
-            text: String(random().slice(0, 10)).toLocaleUpperCase(),
-            top: 320
-          }
-        ],
-        width: 580
+      const frontImage = await generateFrontImage({
+        data: {
+          cpf,
+          dateOfBirth,
+          expirationDate,
+          firstLicenseDate,
+          genericNumber,
+          issueDate,
+          localOfBirth,
+          motherName,
+          name,
+          registerNumber,
+          rg
+        },
+        faceId,
+        frontBackgroundSharp
       });
-
-      const mainBuffer = await mainSharp
-        .composite([{ input: maleText }, { input: personBuffer, left: 115, top: 158 }])
-        .toBuffer();
-
-      const maleUrl = generateAzurePathJpeg();
-
-      const image = await backgroundSharp.composite([{ input: mainBuffer }]).toBuffer();
 
       await uploadFileToAzure({
-        azurePath: maleUrl,
-        image
+        azurePath: frontDocumentUrl,
+        image: frontImage
       });
 
-      await DataSource.action.createMany({
-        data: [],
-        skipDuplicates: true
-      });
+      const backDocumentUrl = generateAzurePathJpeg();
 
       const finalResults: DataProps[] = [];
 
       finalResults.push({
         data: {
-          email: ' ',
-          password: ' '
+          email: '',
+          password: ''
         },
         hasError: false,
-        result: [maleUrl]
+        result: [frontDocumentUrl, backDocumentUrl]
       });
+
+      if (typeof functionalityId === 'number' && test !== true) {
+        const data = finalResults.map((item) => ({
+          data: item.data,
+          functionalityId,
+          result: item.result,
+          userId: request.user.id
+        }));
+
+        await DataSource.action.createMany({
+          data,
+          skipDuplicates: true
+        });
+      }
 
       return ok({ payload: finalResults, response });
     } catch (error) {

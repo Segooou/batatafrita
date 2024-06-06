@@ -16,7 +16,7 @@ export const findImageAndResize = async ({
   height,
   isSharp,
   width
-}: findImageAndResizeProps): Promise<Buffer | Sharp> => {
+}: findImageAndResizeProps): Promise<Buffer | Sharp[]> => {
   const fetchImageResponse = await fetch(
     `https://drive.google.com/uc?export=download&id=${imageDriveId}`
   );
@@ -31,9 +31,10 @@ export const findImageAndResize = async ({
     .toBuffer();
 
   if (isSharp === true) {
-    const finalImage = sharp(resizableImage);
+    const finalImage1 = sharp(resizableImage);
+    const finalImage2 = sharp(resizableImage);
 
-    return finalImage;
+    return [finalImage1, finalImage2];
   }
 
   return resizableImage;
