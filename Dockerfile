@@ -1,20 +1,14 @@
 FROM node:18.15.0-alpine3.16
 
-RUN apk --no-cache add \
-    sudo \
-    build-base \
-    libcairo \
-    libcairo-dev \
-    libpng \
-    libpng-dev \
-    libjpeg-turbo \
-    libjpeg-turbo-dev \
-    pango \
-    pango-dev \
-    giflib \
+RUN apk add --update --no-cache \
+    make \
+    g++ \
+    jpeg-dev \
+    cairo-dev \
     giflib-dev \
-    librsvg \
-    librsvg-dev
+    pango-dev
+
+RUN npm_config_build_from_source=true npm i canvas --build-from-source
 
 WORKDIR /app
 
