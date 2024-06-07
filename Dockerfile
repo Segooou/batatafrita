@@ -8,6 +8,13 @@ RUN apk add --update --no-cache \
     giflib-dev \
     pango-dev
 
+RUN apk add --no-cache fontconfig
+
+COPY path/to/arial.ttf /usr/share/fonts/
+COPY path/to/times.ttf /usr/share/fonts/
+
+RUN fc-cache -f -v
+
 WORKDIR /app
 
 COPY package.json ./
