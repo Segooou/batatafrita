@@ -10,8 +10,8 @@ RUN apk add --update --no-cache \
 
 RUN apk add --no-cache fontconfig
 
-COPY path/to/arial.ttf /usr/share/fonts/
-COPY path/to/times.ttf /usr/share/fonts/
+COPY fonts/arial.ttf /usr/share/fonts/ 
+COPY fonts/times.ttf /usr/share/fonts/
 
 RUN fc-cache -f -v
 
