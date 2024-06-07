@@ -15,7 +15,7 @@ import {
   messageErrorResponse,
   ok
 } from '../../../../main/utils';
-import { findImageAndResize, generateFrontImage, getImageDrive } from '../../../helper';
+import { findImageAndResize, generateBackImage, generateFrontImage } from '../../../helper';
 import { generateAzurePathJpeg, uploadFileToAzure } from '../../../../infra/azure-blob';
 import { random } from '../../../../main/utils/random';
 import type { Controller } from '../../../../domain/protocols';
@@ -65,9 +65,7 @@ export const cnhImageController: Controller =
           },
           response
         });
-        
-      // 10uIy353Mu0CcJuxXNPz_J3IGsalKRGOR
-        
+
       const firstLicenseDate = getDateAddYears({ addYears: 19, date: convertToDate(dateOfBirth) });
       const issueDate = getDateBetween({
         biggerThen: convertToDate(getDateSubtractYears({ date: new Date(), subtractYears: 3 })),
@@ -79,34 +77,19 @@ export const cnhImageController: Controller =
       const registerNumber = random().slice(0, 10);
       const genericNumber = random().slice(0, 10);
 
-      const faceId = await getImageDrive({
-        folder:
-          gender?.toLowerCase() === 'female' ||
-          gender?.toLowerCase() === 'mulher' ||
-          gender?.toLowerCase() === 'm'
-            ? 'mulher'
-            : 'homem'
-      });
-
-      const backgroundDriveId = await getImageDrive({
-        folder: 'background'
-      });
-
-      if (typeof faceId === 'boolean' || typeof backgroundDriveId === 'boolean')
-        return badRequest({
-          message: {
-            english: 'Error on find file on drive',
-            portuguese: 'Error ao buscar arquivo no drive'
-          },
-          response
-        });
-
-      const [frontBackgroundSharp] = (await findImageAndResize({
+      const frontBackgroundSharp = (await findImageAndResize({
+        folder: 'fundo',
         height: 1500,
-        imageDriveId: backgroundDriveId,
         isSharp: true,
         width: 1500
-      })) as Sharp[];
+      })) as Sharp;
+
+      const backBackgroundSharp = (await findImageAndResize({
+        folder: 'fundo',
+        height: 1500,
+        isSharp: true,
+        width: 1500
+      })) as Sharp;
 
       const frontDocumentUrl = generateAzurePathJpeg();
 
@@ -116,6 +99,7 @@ export const cnhImageController: Controller =
           dateOfBirth,
           expirationDate,
           firstLicenseDate,
+          gender,
           genericNumber,
           issueDate,
           localOfBirth,
@@ -124,7 +108,6 @@ export const cnhImageController: Controller =
           registerNumber,
           rg
         },
-        faceId,
         frontBackgroundSharp
       });
 
@@ -133,7 +116,21 @@ export const cnhImageController: Controller =
         image: frontImage
       });
 
+      const backImage = await generateBackImage({
+        backBackgroundSharp,
+        data: {
+          dateOfBirth,
+          genericNumber,
+          localOfBirth
+        }
+      });
+
       const backDocumentUrl = generateAzurePathJpeg();
+
+      await uploadFileToAzure({
+        azurePath: backDocumentUrl,
+        image: backImage
+      });
 
       const finalResults: DataProps[] = [];
 
@@ -159,6 +156,11 @@ export const cnhImageController: Controller =
           skipDuplicates: true
         });
       }
+
+      await DataSource.images.createMany({
+        data: [{ url: frontDocumentUrl }, { url: backDocumentUrl }],
+        skipDuplicates: true
+      });
 
       return ok({ payload: finalResults, response });
     } catch (error) {

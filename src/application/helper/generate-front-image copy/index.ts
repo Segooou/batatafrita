@@ -1,4 +1,4 @@
-import { findImageAndResize, insertTexts } from '../image';
+import { findImageAndResize2, insertTexts } from '../image';
 import type { Sharp } from 'sharp';
 
 export interface generateCnhData {
@@ -38,14 +38,14 @@ export const generateFrontImage = async ({
     rg
   }
 }: generateFrontImageProps): Promise<Buffer> => {
-  const [frontSharp] = (await findImageAndResize({
+  const [frontSharp] = (await findImageAndResize2({
     height: 430,
     imageDriveId: '18r0ud73Cbl2b4U-wv2d1oPXAd81Pifjm',
     isSharp: true,
     width: 580
   })) as Sharp[];
 
-  const personBuffer = (await findImageAndResize({
+  const personBuffer = (await findImageAndResize2({
     height: 185,
     imageDriveId: faceId,
     width: 128

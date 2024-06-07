@@ -159,3 +159,14 @@ model NewFunctionality {
 
   @@map("newFunctionality")
 }
+
+model Images {
+  id  Int    @id @default(autoincrement())
+  url String
+
+  finishedAt DateTime? @db.Timestamptz()
+  createdAt  DateTime  @default(now()) @db.Timestamptz()
+  updatedAt  DateTime  @updatedAt @db.Timestamptz()
+
+  @@map("images")
+}
