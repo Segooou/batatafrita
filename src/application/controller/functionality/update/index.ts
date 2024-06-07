@@ -5,6 +5,8 @@ import { DataSource } from '../../../../infra/database';
 import {
   errorLogger,
   messageErrorResponse,
+  normalizeText,
+  notFound,
   ok,
   validationErrorResponse,
   whereById
@@ -17,6 +19,7 @@ import type { Request, Response } from 'express';
 interface Body {
   apiRoute?: string;
   description?: string;
+  name?: string;
   platformId?: number;
   googleSheets?: number;
   inputProps?: InputProps[];
@@ -80,6 +83,7 @@ export const updateFunctionalityController: Controller =
         inputProps,
         active,
         from,
+        name,
         indexToGet,
         messageNotFound,
         messageOnFind,
@@ -111,6 +115,28 @@ export const updateFunctionalityController: Controller =
       const newApiRoute =
         typeof apiRoute === 'string' && apiRoute.length > 0 ? apiRoute : '/functionality/execute';
 
+      let keyword: string | undefined;
+
+      if (typeof name === 'string') {
+        const func = await DataSource.functionality.findUnique({
+          select: {
+            platform: {
+              select: {
+                keyword: true
+              }
+            }
+          },
+          where: { id: Number(request.params.id) }
+        });
+
+        if (func === null)
+          return notFound({
+            entity: { english: 'Functionality', portuguese: 'Funcionalidade' },
+            response
+          });
+        keyword = `${normalizeText(name)}-${func.platform.keyword}`;
+      }
+
       const payload = await DataSource.functionality.update({
         data: {
           active,
@@ -124,8 +150,10 @@ export const updateFunctionalityController: Controller =
               data: inputPropsValues
             }
           },
+          keyword,
           messageNotFound,
           messageOnFind,
+          name,
           platformId,
           regex,
           subject,
