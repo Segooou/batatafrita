@@ -117,7 +117,7 @@ export const generateFrontImage = async ({
         top: 330
       },
       {
-        font: 'times new roman',
+        font: 'Times New Roman',
         left: 90,
         rotate: 270,
         size: '30px',
