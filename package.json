@@ -7,7 +7,7 @@
     "postinstall": "prisma generate",
     "seed": "npx prisma db seed",
     "build": "tsc && npm run build:static",
-    "build:static": "copy src/static build/static",
+    "build:static": "cp -R src/static build/static",
     "build:windows": "tsc && npm run build:static:windows",
     "build:static:windows": "xcopy /E /I src\\static dist\\static",
     "reset": "npx prisma migrate reset",
