@@ -102,10 +102,9 @@ export const insertTexts = ({ texts, height, width }: insertTextProps): Buffer =
     ctx.font = `${item.size ?? '12px'} ${item.font ?? 'Arial'}`;
 
     const rotate = item.rotate ?? 1;
-    // Calcula o ângulo de inclinação em radianos (por exemplo, 10 graus)
+
     const angle = Number(rotate * Math.PI) / 180;
 
-    // Aplica a transformação de rotação
     ctx.translate(item.left, item.top + 10);
     ctx.rotate(angle);
     ctx.fillText(item.text, 0, 0);

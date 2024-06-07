@@ -40,7 +40,7 @@ export const generateBackImage = async ({
         top: 316
       },
       {
-        font: 'Times New Roman',
+        font: '/usr/share/fonts/times.ttf',
         left: 90,
         rotate: 270,
         size: '30px',
