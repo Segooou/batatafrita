@@ -4,6 +4,7 @@ export * from './platform.routes';
 export * from './new-functionality.routes';
 export * from './favorite-user-functionality.routes';
 export * from './functionality.routes';
+export * from './functionality-image.routes';
 export * from './stake.routes';
 export * from './betano.routes';
 export * from './google-sheets.routes';

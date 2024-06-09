@@ -5,6 +5,10 @@ export const defaultMessages = {
     english: `${field.english} already registered`,
     portuguese: `${field.portuguese} já está cadastrada`
   }),
+  badFileUpload: {
+    english: 'Failed on upload file',
+    portuguese: 'Falha ao enviar arquivo'
+  },
   badOrder: {
     english: 'Sorting failure',
     portuguese: 'Falha na ordenação'
@@ -21,9 +25,17 @@ export const defaultMessages = {
     english: 'Request successfully',
     portuguese: 'Requisição bem sucedida'
   },
+  successfullyCreated: {
+    english: 'Successfully Created',
+    portuguese: 'Criado com sucesso'
+  },
   successfullyDeleted: {
     english: 'Successfully Deleted',
     portuguese: 'Excluído com sucesso'
+  },
+  successfullyUpdated: {
+    english: 'Successfully Updated',
+    portuguese: 'Atualizado com sucesso'
   },
   timeout: {
     english: 'Request has expired. Try again later',

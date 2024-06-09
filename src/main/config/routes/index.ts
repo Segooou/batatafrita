@@ -2,6 +2,7 @@ import {
   ActionRoutes,
   BetanoRoutes,
   FavoriteUserFunctionalityRoutes,
+  FunctionalityImageRoutes,
   FunctionalityRoutes,
   GoogleSheetsRoutes,
   ImageRoutes,
@@ -35,6 +36,7 @@ export const setupRoutes = (app: Express): void => {
   BetanoRoutes(privateRouter);
   GoogleSheetsRoutes(privateRouter);
   ImageRoutes(privateRouter);
+  FunctionalityImageRoutes(privateRouter);
 
   app.use(publicRouter);
 

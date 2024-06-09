@@ -6,3 +6,4 @@ export * from './action';
 export * from './new-functionality';
 export * from './favorite-user-functionality';
 export * from './functionality';
+export * from './functionality-image';

@@ -10,6 +10,18 @@ export const defaultFolder = (pathName: string): string => {
   return path.join(__dirname, '..', '..', '..', 'static', 'uploads', fileName);
 };
 
+interface getMainImageProps {
+  image: string;
+}
+
+export const getMainImage = ({ image }: getMainImageProps): Sharp => {
+  const imagePath = path.join(__dirname, '..', '..', '..', 'static', 'uploads', image);
+
+  const imageBuffer = sharp(imagePath);
+
+  return imageBuffer;
+};
+
 interface getImageProps {
   folder: 'assinatura' | 'default' | 'fundo' | 'homem' | 'mulher';
   image: string;
@@ -41,14 +53,14 @@ export const getNextImage = async ({ folder }: getNextImageProps): Promise<sharp
 
   const currentIndex = imageCounters[folder];
 
+  if (currentIndex >= files.length) imageCounters[folder] = 0;
+
   const nextImagePath = path.join(
     folderPath,
     files[currentIndex >= files.length ? 0 : currentIndex]
   );
 
   imageCounters[folder] += 1;
-
-  if (currentIndex >= files.length) imageCounters[folder] = 0;
 
   return sharp(nextImagePath);
 };

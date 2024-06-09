@@ -71,6 +71,7 @@ model Functionality {
   inputProps                InputProps[]
   actions                   Action[]
   favoriteUserFunctionality FavoriteUserFunctionality[]
+  functionalityImages       FunctionalityImage[]
 
   platformId Int
 
@@ -79,6 +80,37 @@ model Functionality {
   updatedAt  DateTime  @updatedAt @db.Timestamptz()
 
   @@map("functionality")
+}
+
+model FunctionalityImage {
+  id                    Int                     @id @default(autoincrement())
+  imagesOnFunctionality ImagesOnFunctionality[]
+  active                Boolean
+
+  functionality Functionality @relation(fields: [functionalityId], references: [id])
+
+  functionalityId Int
+
+  finishedAt DateTime? @db.Timestamptz()
+  createdAt  DateTime  @default(now()) @db.Timestamptz()
+  updatedAt  DateTime  @updatedAt @db.Timestamptz()
+
+  @@map("functionality_images")
+}
+
+model ImagesOnFunctionality {
+  id           Int    @id @default(autoincrement())
+  url          String
+  inputOnImage Json[]
+
+  functionalityImage   FunctionalityImage @relation(fields: [functionalityImageId], references: [id])
+  functionalityImageId Int
+
+  finishedAt DateTime? @db.Timestamptz()
+  createdAt  DateTime  @default(now()) @db.Timestamptz()
+  updatedAt  DateTime  @updatedAt @db.Timestamptz()
+
+  @@map("images_on_functionality")
 }
 
 model InputProps {

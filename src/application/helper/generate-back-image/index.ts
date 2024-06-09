@@ -28,7 +28,6 @@ export const generateBackImage = async ({
     height: 419,
     texts: [
       {
-        font: 6,
         left: 254,
         size: '9px',
         text: String(dateOfBirth).toUpperCase(),

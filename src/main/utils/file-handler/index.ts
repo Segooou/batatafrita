@@ -45,7 +45,7 @@ const fileFilter = (req: any, file: any, cb: any): void => {
 export const uploadOneFileMiddleware = multer({
   fileFilter,
   limits: {
-    fileSize: 10 * 1024 * 1024
+    fileSize: 15 * 1024 * 1024
   },
   storage
 }).single('image');
@@ -76,7 +76,9 @@ export const insertImage: Controller =
         }`;
 
       if (typeof filename === 'string')
-        Object.assign(request, { body: { ...request.body, image: filename } });
+        Object.assign(request, {
+          body: { ...request.body, filename: request?.file?.filename ?? '', image: filename }
+        });
 
       next();
     } catch (error) {

@@ -12,16 +12,18 @@ const blobServiceClient = new BlobServiceClient(azureUrl, sharedKeyCredential);
 interface uploadFileToAzureProps {
   azurePath: string;
   image: Buffer;
+  containerName?: string;
 }
 
 export const uploadFileToAzure = async ({
   azurePath,
-  image
+  image,
+  containerName
 }: uploadFileToAzureProps): Promise<string | null> => {
   try {
-    const containerClient = blobServiceClient.getContainerClient('resultado');
+    const containerClient = blobServiceClient.getContainerClient(containerName ?? 'resultado');
     const blockBlobClient = containerClient.getBlockBlobClient(
-      azurePath.replace(`${azureUrl}resultado/`, '')
+      azurePath.replace(`${azureUrl}${containerName ?? 'resultado'}/`, '')
     );
 
     const blobHTTPHeaders = {
@@ -39,6 +41,6 @@ export const uploadFileToAzure = async ({
   }
 };
 
-export const generateAzurePathJpeg = (): string => {
-  return `${azureUrl}resultado/${Date.now()}-${random()}.jpeg`;
+export const generateAzurePathJpeg = (containerName?: string): string => {
+  return `${azureUrl}${containerName ?? 'resultado'}/${Date.now()}-${random()}.jpeg`;
 };

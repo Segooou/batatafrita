@@ -15,6 +15,7 @@ build
 
 # vuepress v2.x temp and cache directory
 .temp
+env.json
 
 src/logs
 
