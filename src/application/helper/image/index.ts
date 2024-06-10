@@ -113,7 +113,7 @@ export interface inputOnImageProps {
 
 interface insertInputsOnImageProps {
   blackImage: Sharp;
-  data: { name: string };
+  data: any;
   inputOnImage: inputOnImageProps[];
 }
 
@@ -129,8 +129,15 @@ export const insertInputsOnImage = async ({
   const insertText: inputOnImageProps[] = [];
 
   inputOnImage?.forEach((item) => {
-    if (typeof item.folder === 'string') insertImages.push(item as Required<inputOnImageProps>);
-    insertText.push({ ...item, text: data?.[item.value as 'name'] ?? ' ' });
+    if (typeof item.folder === 'string')
+      insertImages.push({
+        ...(item as Required<inputOnImageProps>),
+        folder: item.folder === 'assinatura' ? item.folder : data.gender
+      });
+    insertText.push({
+      ...item,
+      text: data?.[item.value as 'name'] ?? ' '
+    });
   });
 
   const promises = insertImages?.map(async (item) => {
