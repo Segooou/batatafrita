@@ -13,7 +13,7 @@ import {
 } from '../../../../main/utils';
 import { generateAzurePathJpeg, uploadFileToAzure } from '../../../../infra/azure-blob';
 import { messages } from '../../../../domain/helpers';
-import { unlink } from 'fs/promises';
+import { unlink } from 'fs';
 import type { Controller } from '../../../../domain/protocols';
 import type { Request, Response } from 'express';
 
@@ -61,7 +61,9 @@ export const insertImageOnFunctionalityController: Controller =
       if (url === null) return badRequest({ message: messages.default.badFileUpload, response });
 
       try {
-        await unlink(defaultFolder(filename));
+        unlink(defaultFolder(filename), (err): void => {
+          console.info(err);
+        });
       } catch (error) {
         console.info(error);
       }

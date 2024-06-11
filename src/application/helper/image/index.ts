@@ -134,10 +134,11 @@ export const insertInputsOnImage = async ({
         ...(item as Required<inputOnImageProps>),
         folder: item.folder === 'assinatura' ? item.folder : data.gender
       });
-    insertText.push({
-      ...item,
-      text: data?.[item.value as 'name'] ?? ' '
-    });
+    else
+      insertText.push({
+        ...item,
+        text: data?.[item.value as 'name'] ?? ' '
+      });
   });
 
   const promises = insertImages?.map(async (item) => {

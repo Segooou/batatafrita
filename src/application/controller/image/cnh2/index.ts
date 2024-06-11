@@ -103,14 +103,15 @@ export const cnh2ImageController: Controller =
         where: { AND: { active: true, finishedAt: null, functionalityId } }
       });
 
+      if (position >= count) position = 0;
+
       const functionalityImage = await DataSource.functionalityImage.findFirst({
         select: functionalityImageFindParams,
         skip: position >= count ? 0 : position,
         where: { AND: { active: true, finishedAt: null, functionalityId } }
       });
 
-      if (position >= count) position = 0;
-      else position += 1;
+      position += 1;
 
       const finalResults: DataProps[] = [];
 

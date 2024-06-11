@@ -134,12 +134,7 @@ export const getGenericFilter = <QueryType extends string>({
           }
         });
 
-  if (isObjectEmpty(orderBy)) Object.assign(orderBy, { createdAt: 'desc' });
+  if (isObjectEmpty(orderBy)) Object.assign(orderBy, { id: 'desc' });
 
-  return {
-    orderBy,
-    where: {
-      AND: where
-    }
-  };
+  return { orderBy, where: { AND: where } };
 };
