@@ -1,3 +1,10 @@
+/* eslint-disable no-param-reassign */
+/* eslint-disable @typescript-eslint/restrict-plus-operands */
+/* eslint-disable id-length */
+/* eslint-disable no-plusplus */
+/* eslint-disable max-params */
+/* eslint-disable @typescript-eslint/no-shadow */
+/* eslint-disable max-statements */
 /* eslint-disable @typescript-eslint/no-confusing-void-expression */
 /* eslint-disable @typescript-eslint/no-misused-promises */
 /* eslint-disable @typescript-eslint/no-redundant-type-constituents */
@@ -11,6 +18,7 @@ interface findImageAndResizeProps {
   folder: 'assinatura' | 'default' | 'fundo' | 'homem' | 'mulher';
   image?: 'back.png' | 'front.png';
   isSharp?: boolean;
+  bluer?: boolean;
   width: number;
   height: number;
 }
@@ -19,6 +27,7 @@ export const findImageAndResize = async ({
   height,
   isSharp,
   folder,
+  bluer,
   image,
   width
 }: findImageAndResizeProps): Promise<Buffer | Sharp | boolean> => {
@@ -39,6 +48,7 @@ export const findImageAndResize = async ({
     )
     .linear(contrast, -(128 * contrast) + 128)
     .modulate({ brightness })
+    .blur(bluer === true ? 1.5 : 1)
     .toBuffer();
 
   if (isSharp === true) {
@@ -143,6 +153,7 @@ export const insertInputsOnImage = async ({
 
   const promises = insertImages?.map(async (item) => {
     const imageBuffer = (await findImageAndResize({
+      bluer: item.folder !== 'assinatura',
       folder: item.folder,
       height: item.height,
       width: item.width
@@ -155,6 +166,18 @@ export const insertInputsOnImage = async ({
   await Promise.all(promises);
 
   const metadata = await blackImage.metadata();
+
+  // const names = String(data?.name).split(' ');
+
+  // insertText.push({
+  //   ...insertText[0],
+  //   font: 'Homemade Apple',
+  //   height: 64,
+  //   left: 330,
+  //   text: names?.[0],
+  //   top: 1145,
+  //   width: 180
+  // });
 
   const textCanvas = insertTexts({
     height: metadata.height ?? 1200,
@@ -205,6 +228,64 @@ export const insertTexts = ({ texts, height, width }: insertTextProps): Buffer =
 
     ctx.restore();
   });
+
+  const applyBlur = (ctx: any, width: any, height: any, radius: any): void => {
+    const imageData = ctx.getImageData(0, 0, width, height);
+    const { data } = imageData;
+
+    const gaussianBlur = (data: any, width: any, height: any, radius: any): void => {
+      const weights = [];
+      const sigma = radius / 3;
+      let sum = 0;
+
+      for (let y = -radius; y <= radius; y++)
+        for (let x = -radius; x <= radius; x++) {
+          const weight = Math.exp(-(x * x + y * y) / (2 * sigma * sigma));
+
+          weights.push(weight);
+          sum += weight;
+        }
+
+      for (let i = 0; i < weights.length; i++) weights[i] /= sum;
+
+      const copy = new Uint8ClampedArray(data);
+
+      for (let y = 0; y < height; y++)
+        for (let x = 0; x < width; x++) {
+          const r = [0, 0, 0, 0];
+          let totalWeight = 0;
+
+          for (let wy = -radius; wy <= radius; wy++)
+            for (let wx = -radius; wx <= radius; wx++) {
+              const iy = Math.min(height - 1, Math.max(0, y + wy));
+              const ix = Math.min(width - 1, Math.max(0, x + wx));
+              const weight = weights[(wy + radius) * (2 * radius + 1) + (wx + radius)];
+
+              const index = (iy * width + ix) * 4;
+
+              r[0] += copy[index] * weight;
+              r[1] += copy[index + 1] * weight;
+              r[2] += copy[index + 2] * weight;
+              r[3] += copy[index + 3] * weight;
+
+              totalWeight += weight;
+            }
+
+          const index = (y * width + x) * 4;
+
+          data[index] = r[0] / totalWeight;
+          data[index + 1] = r[1] / totalWeight;
+          data[index + 2] = r[2] / totalWeight;
+          data[index + 3] = r[3] / totalWeight;
+        }
+    };
+
+    gaussianBlur(data, width, height, radius);
+
+    ctx.putImageData(imageData, 0, 0);
+  };
+
+  applyBlur(ctx, canvas.width, canvas.height, 2);
 
   const textBuffer = canvas.toBuffer();
 

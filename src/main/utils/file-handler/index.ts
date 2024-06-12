@@ -20,6 +20,13 @@ const checkTempStorageDir = (): void => {
 
 const storage = diskStorage({
   destination(req, file, cb) {
+    const { folder } = req.body;
+
+    if (folder === 'homem' || folder === 'mulher' || folder === 'assinatura') {
+      cb(null, path.join(__dirname, '..', '..', '..', 'static', 'uploads', folder));
+      return;
+    }
+
     cb(null, path.join(__dirname, '..', '..', '..', 'static', 'uploads'));
   },
   filename(req, file, cb) {
@@ -69,11 +76,17 @@ export const insertImage: Controller =
   () => (request: Request, response: Response, next: NextFunction) => {
     try {
       let filename: string | undefined;
+      const { folder } = request.body;
 
       if (request.file?.filename)
-        filename = `${request.protocol}://${request.get('host') ?? ''}/static/uploads/${
-          request.file.filename
-        }`;
+        if (folder === 'homem' || folder === 'mulher' || folder === 'assinatura')
+          filename = `${request.protocol}://${request.get('host') ?? ''}/static/uploads/${String(
+            folder
+          )}/${request.file.filename}`;
+        else
+          filename = `${request.protocol}://${request.get('host') ?? ''}/static/uploads/${
+            request.file.filename
+          }`;
 
       if (typeof filename === 'string')
         Object.assign(request, {
