@@ -1,8 +1,9 @@
-/* eslint-disable @typescript-eslint/strict-boolean-expressions */
 /* eslint-disable consistent-return */
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+/* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable max-params */
+/* eslint-disable @typescript-eslint/strict-boolean-expressions */
 import { badRequest, messageErrorResponse } from '../api-response';
 import { errorLogger } from '../error-logger';
 import { existsSync, mkdirSync } from 'fs';
@@ -48,6 +49,14 @@ const fileFilter = (req: any, file: any, cb: any): void => {
   if (String(file?.mimetype)?.startsWith('image/')) cb(null, true);
   else cb(new MulterError('LIMIT_UNEXPECTED_FILE'), true);
 };
+
+export const uploadFilesMiddleware = multer({
+  fileFilter,
+  limits: {
+    fileSize: 15 * 1024 * 1024
+  },
+  storage
+}).array('images');
 
 export const uploadOneFileMiddleware = multer({
   fileFilter,
