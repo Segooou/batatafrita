@@ -142,7 +142,7 @@ export const insertInputsOnImage = async ({
     if (typeof item.folder === 'string')
       insertImages.push({
         ...(item as Required<inputOnImageProps>),
-        folder: item.folder === 'assinatura' ? item.folder : data.gender
+        folder: data.gender
       });
     else
       insertText.push({
@@ -167,18 +167,6 @@ export const insertInputsOnImage = async ({
 
   const metadata = await blackImage.metadata();
 
-  // const names = String(data?.name).split(' ');
-
-  // insertText.push({
-  //   ...insertText[0],
-  //   font: 'Homemade Apple',
-  //   height: 64,
-  //   left: 330,
-  //   text: names?.[0],
-  //   top: 1145,
-  //   width: 180
-  // });
-
   const textCanvas = insertTexts({
     height: metadata.height ?? 1200,
     texts: insertText,
@@ -201,6 +189,7 @@ interface insertTextProps {
     font?: string;
     rotate?: number;
     color?: string;
+    value?: string;
   }>;
   width: number;
   height: number;
@@ -224,7 +213,12 @@ export const insertTexts = ({ texts, height, width }: insertTextProps): Buffer =
 
     ctx.translate(item.left, item.top + 10);
     ctx.rotate(angle);
-    ctx.fillText(item.text?.toUpperCase(), 0, 0);
+    const text =
+      item.value === 'assinatura'
+        ? String(item.text ?? ' ')
+        : String(item.text ?? ' ').toUpperCase();
+
+    ctx.fillText(text, 0, 0);
 
     ctx.restore();
   });

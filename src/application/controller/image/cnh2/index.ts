@@ -79,8 +79,17 @@ export const cnh2ImageController: Controller =
       const genericNumber = random().slice(0, 10);
       const nationality = 'Brasileiro'.toUpperCase();
       const category = 'B';
+      let assinatura = '';
+      const separatedName = name.split(' ');
+
+      separatedName.forEach((item, index) => {
+        if (index === 0) assinatura = item;
+        if (index === 1) assinatura = `${assinatura} ${item}`;
+        if (index === 2 && separatedName[1].length === 2) assinatura = `${assinatura} ${item}`;
+      });
 
       const data = {
+        assinatura,
         category,
         cpf,
         dateOfBirth,

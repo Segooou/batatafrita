@@ -6,10 +6,7 @@
   "scripts": {
     "postinstall": "prisma generate",
     "seed": "npx prisma db seed",
-    "build": "tsc && npm run build:static",
-    "build:static": "cp -R src/static dist/static",
-    "build:win": "tsc && npm run build:win:static",
-    "build:win:static": "xcopy /E /I src\\static dist\\static",
+    "build": "tsc",
     "reset": "npx prisma migrate reset",
     "dev": "env-cmd -f ./.env ts-node-dev --respawn --transpile-only --clear -r dotenv/config --inspect=0.0.0.0:9229 src/index.ts --host",
     "start": "node dist/index.js"

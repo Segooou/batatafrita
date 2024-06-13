@@ -23,12 +23,9 @@ const storage = diskStorage({
   destination(req, file, cb) {
     const { folder } = req.body;
 
-    if (folder === 'homem' || folder === 'mulher' || folder === 'assinatura') {
+    if (folder === 'homem' || folder === 'mulher' || folder === 'assinatura')
       cb(null, path.join(__dirname, '..', '..', '..', 'static', 'uploads', folder));
-      return;
-    }
-
-    cb(null, path.join(__dirname, '..', '..', '..', 'static', 'uploads'));
+    else cb(null, path.join(__dirname, '..', '..', '..', 'static', 'uploads'));
   },
   filename(req, file, cb) {
     checkTempStorageDir();
