@@ -77,14 +77,22 @@ export const rgImageController: Controller = () => async (request: Request, resp
     )}-${random().slice(0, 1)}`;
     const nationality = 'S.PAULO - SP';
     const organ = 'SSP-SP';
-    let assinatura = '';
-    const separatedName = name.split(' ');
 
-    separatedName.forEach((item, index) => {
-      if (index === 0) assinatura = item;
-      if (index === 1) assinatura = `${assinatura} ${item}`;
-      if (index === 2 && separatedName[1].length === 2) assinatura = `${assinatura} ${item}`;
-    });
+    const capitalizeFirstLetter = (string: string): string => {
+      return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
+    };
+    const capitalizeWords = (string: string): string => {
+      return string
+        .split(' ')
+        .map((word) => {
+          if (word.length > 2) return capitalizeFirstLetter(word);
+
+          return word.toLowerCase();
+        })
+        .join(' ');
+    };
+
+    const assinatura = capitalizeWords(name);
 
     const data = {
       assinatura,
