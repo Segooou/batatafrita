@@ -116,6 +116,7 @@ export interface inputOnImageProps {
   width: number;
   folder?: 'assinatura' | 'homem' | 'mulher';
   size?: string;
+  bold?: string;
   font?: string;
   rotate?: number;
   color?: string;
@@ -189,6 +190,7 @@ interface insertTextProps {
     font?: string;
     rotate?: number;
     color?: string;
+    bold?: string;
     value?: string;
   }>;
   width: number;
@@ -205,7 +207,7 @@ export const insertTexts = ({ texts, height, width }: insertTextProps): Buffer =
     const size = Number(item.size ?? 12);
 
     ctx.fillStyle = item.color ?? 'black';
-    ctx.font = `${size}px ${item.font ?? 'Arial'}`;
+    ctx.font = `${item.bold ?? ''} ${size}px ${item.font ?? 'Arial'}`;
 
     const rotate = item.rotate ?? 1;
 

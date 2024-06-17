@@ -30,3 +30,36 @@ export const getOneLocale = (): string => {
 
   return cities[randomIndex];
 };
+
+export const getOneLocaleRG = (): string => {
+  const cities = [
+    'São Paulo-SP São Paulo',
+    'Guarulhos-SP Guarulhos',
+    'Campinas-SP Campinas',
+    'São Bernardo do Campo-SP São Bernardo do Campo',
+    'Osasco-SP Osasco',
+    'Santo André-SP Santo André',
+    'São José dos Campos-SP São José dos Campos',
+    'Ribeirão Preto-SP Ribeirão Preto',
+    'Sorocaba-SP Sorocaba',
+    'Mauá-SP Mauá',
+    'São José do Rio Preto-SP São José do Rio Preto',
+    'Mogi das Cruzes-SP Mogi das Cruzes',
+    'Santos-SP Santos',
+    'Diadema-SP Diadema',
+    'Jundiaí-SP Jundiaí',
+    'Piracicaba-SP Piracicaba',
+    'Carapicuíba-SP Carapicuíba',
+    'Bauru-SP Bauru',
+    'Itaquaquecetuba-SP Itaquaquecetuba',
+    'São Vicente-SP São Vicente',
+    'Franca-SP Franca',
+    'Praia Grande-SP Praia Grande',
+    'Guarujá-SP Guarujá',
+    'Taubaté-SP Taubaté',
+    'Limeira-SP Limeira'
+  ];
+  const randomIndex = Math.floor(Math.random() * cities.length);
+
+  return cities[randomIndex];
+};
