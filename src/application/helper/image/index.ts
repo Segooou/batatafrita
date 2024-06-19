@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 /* eslint-disable no-param-reassign */
 /* eslint-disable @typescript-eslint/restrict-plus-operands */
 /* eslint-disable id-length */
@@ -107,6 +108,27 @@ export const findImageAndResize2 = async ({
   return resizableImage;
 };
 
+let getAssinaturaFontCount = 0;
+
+const getAssinaturaFont = (): string => {
+  const assinaturaArray = [
+    'Homemade Apple',
+    'Satisfy',
+    'Dancing Script',
+    'Allura',
+    'Great Vibes',
+    'Sacramento'
+  ];
+
+  if (assinaturaArray.length > getAssinaturaFontCount) {
+    getAssinaturaFontCount += 1;
+    return assinaturaArray[getAssinaturaFontCount - 1];
+  }
+
+  getAssinaturaFontCount = 0;
+  return 'Homemade Apple';
+};
+
 export interface inputOnImageProps {
   value: string;
   text: string;
@@ -145,7 +167,17 @@ export const insertInputsOnImage = async ({
         ...(item as Required<inputOnImageProps>),
         folder: data.gender
       });
-    else
+    else if (item.value === 'assinatura') {
+      const font = getAssinaturaFont();
+
+      insertText.push({
+        ...item,
+        font,
+        size:
+          font === 'Homemade Apple' ? String(Number(item.size?.replace('px', '')) - 6) : item.size,
+        text: data?.[item.value as 'name'] ?? ' '
+      });
+    } else
       insertText.push({
         ...item,
         text: data?.[item.value as 'name'] ?? ' '

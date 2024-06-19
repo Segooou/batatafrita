@@ -88,6 +88,22 @@ export const cnhImageController: Controller =
         if (index === 2 && separatedName[1].length === 2) assinatura = `${assinatura} ${item}`;
       });
 
+      const capitalizeFirstLetter = (string: string): string => {
+        return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
+      };
+      const capitalizeWords = (string: string): string => {
+        return string
+          .split(' ')
+          .map((word) => {
+            if (word.length > 2) return capitalizeFirstLetter(word);
+
+            return word.toLowerCase();
+          })
+          .join(' ');
+      };
+
+      assinatura = capitalizeWords(assinatura);
+
       const data = {
         assinatura,
         category,
