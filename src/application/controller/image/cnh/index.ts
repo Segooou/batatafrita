@@ -79,15 +79,6 @@ export const cnhImageController: Controller =
       const genericNumber = random().slice(0, 10);
       const nationality = 'Brasileiro'.toUpperCase();
       const category = 'B';
-      let assinatura = '';
-      const separatedName = name.split(' ');
-
-      separatedName.forEach((item, index) => {
-        if (index === 0) assinatura = item;
-        if (index === 1) assinatura = `${assinatura} ${item}`;
-        if (index === 2 && separatedName[1].length === 2) assinatura = `${assinatura} ${item}`;
-      });
-
       const capitalizeFirstLetter = (string: string): string => {
         return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
       };
@@ -102,7 +93,7 @@ export const cnhImageController: Controller =
           .join(' ');
       };
 
-      assinatura = capitalizeWords(assinatura);
+      const assinatura = capitalizeWords(name);
 
       const data = {
         assinatura,
