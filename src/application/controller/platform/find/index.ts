@@ -58,7 +58,7 @@ export const findPlatformController: Controller =
         query.all === 'true'
           ? {}
           : {
-              some: {}
+              some: { finishedAt: null }
             };
 
       const search = await DataSource.platform.findMany({
