@@ -7,5 +7,8 @@ export const userFindParams: Prisma.UserSelect = {
   id: true,
   role: true,
   updatedAt: true,
+  userSeeFunctionality: {
+    select: { functionalityId: true }
+  },
   username: true
 };

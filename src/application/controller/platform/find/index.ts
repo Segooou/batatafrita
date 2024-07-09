@@ -46,7 +46,7 @@ import type { platformQueryFields } from '../../../../data/validation';
  */
 export const findPlatformController: Controller =
   () =>
-  async ({ query }: Request, response: Response) => {
+  async ({ query, user }: Request, response: Response) => {
     try {
       const { skip, take } = getPagination({ query });
       const { orderBy, where } = getGenericFilter<platformQueryFields>({
@@ -61,6 +61,13 @@ export const findPlatformController: Controller =
               some: { finishedAt: null }
             };
 
+      const userSeePlatform =
+        user.role === 'admin'
+          ? {}
+          : {
+              some: { userId: user.id }
+            };
+
       const search = await DataSource.platform.findMany({
         orderBy,
         select: platformFindParams,
@@ -68,14 +75,16 @@ export const findPlatformController: Controller =
         take,
         where: {
           ...where,
-          functionalities
+          functionalities,
+          userSeePlatform
         }
       });
 
       const totalElements = await DataSource.platform.count({
         where: {
           ...where,
-          functionalities
+          functionalities,
+          userSeePlatform
         }
       });
 

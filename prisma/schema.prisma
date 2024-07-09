@@ -18,12 +18,36 @@ model User {
   actions                   Action[]
   favoriteUserFunctionality FavoriteUserFunctionality[]
   newFunctionality          NewFunctionality[]
+  userSeeFunctionality      UserSeeFunctionality[]
 
-  finishedAt DateTime? @db.Timestamptz()
-  createdAt  DateTime  @default(now()) @db.Timestamptz()
-  updatedAt  DateTime  @updatedAt @db.Timestamptz()
+  finishedAt      DateTime?         @db.Timestamptz()
+  createdAt       DateTime          @default(now()) @db.Timestamptz()
+  updatedAt       DateTime          @updatedAt @db.Timestamptz()
+  UserSeePlatform UserSeePlatform[]
 
   @@map("user")
+}
+
+model UserSeeFunctionality {
+  id Int @id @default(autoincrement())
+
+  user            User          @relation(fields: [userId], references: [id])
+  functionality   Functionality @relation(fields: [functionalityId], references: [id])
+  userId          Int
+  functionalityId Int
+
+  @@map("userSeeFunctionality")
+}
+
+model UserSeePlatform {
+  id Int @id @default(autoincrement())
+
+  user       User     @relation(fields: [userId], references: [id])
+  platform   Platform @relation(fields: [platformId], references: [id])
+  userId     Int
+  platformId Int
+
+  @@map("userSeePlatform")
 }
 
 enum Role {
@@ -40,6 +64,7 @@ model Platform {
 
   NewFunctionality NewFunctionality[]
   functionalities  Functionality[]
+  userSeePlatform  UserSeePlatform[]
 
   finishedAt DateTime? @db.Timestamptz()
   createdAt  DateTime  @default(now()) @db.Timestamptz()
@@ -72,6 +97,7 @@ model Functionality {
   actions                   Action[]
   favoriteUserFunctionality FavoriteUserFunctionality[]
   functionalityImages       FunctionalityImage[]
+  userSeeFunctionality      UserSeeFunctionality[]
 
   platformId Int
 

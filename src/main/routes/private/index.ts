@@ -9,3 +9,4 @@ export * from './stake.routes';
 export * from './betano.routes';
 export * from './google-sheets.routes';
 export * from './image.routes';
+export * from './user-functionalities.routes';
