@@ -43,7 +43,7 @@ export const findEmail = async ({
   const imapConfig = {
     authTimeout: 60000,
     connTimeout: 60000,
-    host: 'outlook.office365.com',
+    host: 'outlook.office.com',
     password,
     port: 993,
     tls: true,
