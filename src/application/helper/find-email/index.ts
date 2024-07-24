@@ -4,7 +4,7 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable @typescript-eslint/restrict-plus-operands */
 /* eslint-disable max-nested-callbacks */
-import Imap from 'imap';
+import Imap from 'node-imap';
 
 export interface OnFindEmailProps {
   buffer: string;
